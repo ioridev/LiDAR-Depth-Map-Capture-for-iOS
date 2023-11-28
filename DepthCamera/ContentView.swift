@@ -4,6 +4,8 @@ import RealityKit
 
 import ImageIO
 import MobileCoreServices
+import CoreGraphics
+
 
 struct ContentView : View {
     @StateObject var arViewModel = ARViewModel()
@@ -22,6 +24,8 @@ struct ContentView : View {
 
 struct ARViewContainer: UIViewRepresentable {
     @ObservedObject var arViewModel: ARViewModel
+
+
 
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
@@ -47,35 +51,28 @@ struct ARViewContainer: UIViewRepresentable {
 class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     private var latestDepthMap: CVPixelBuffer?
 
+    
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         latestDepthMap = frame.sceneDepth?.depthMap
     }
-
+    
     func saveDepthMap() {
         guard let depthMap = latestDepthMap else {
             print("Depth map is not available.")
             return
         }
+
+        let scaledDepthMap = scaleDepthMapTo8Bit(depthMap: depthMap)
+
         let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let timestamp = Date().timeIntervalSince1970
-        let depthFileURL = documentsDir.appendingPathComponent("\(timestamp).tiff")
+        let tiffFileURL = documentsDir.appendingPathComponent("\(timestamp)_scaled.tiff")
+        let binaryFileURL = documentsDir.appendingPathComponent("\(timestamp)_raw.bin")
 
-        // Check if the directory exists, if not, create it
-        let directoryPath = depthFileURL.deletingLastPathComponent()
-        if !FileManager.default.fileExists(atPath: directoryPath.path) {
-            do {
-                try FileManager.default.createDirectory(atPath: directoryPath.path, withIntermediateDirectories: true, attributes: nil)
-            } catch {
-                print("Couldn't create directory: \(error)")
-                return
-            }
-        }
+        writeDepthMapToTIFF(depthMap: scaledDepthMap, url: tiffFileURL)
+        writeDepthMapToBinary(depthMap: depthMap, url: binaryFileURL)
 
-        if !writeDepthMapToTIFF(depthMap: depthMap, url: depthFileURL) {
-            print("Failed to save depth map.")
-        } else {
-            print("Depth map saved at \(depthFileURL)")
-        }
+        print("Depth map saved to \(tiffFileURL) and \(binaryFileURL)")
     }
 }
 
@@ -87,37 +84,62 @@ func writeDepthMapToTIFF(depthMap: CVPixelBuffer, url: URL) -> Bool {
     let height = CVPixelBufferGetHeight(depthMap)
 
     CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
-    let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float32>.self)
+    let data = CVPixelBufferGetBaseAddress(depthMap)!
 
-    let imageData = NSMutableData(length: Int(width * height * 4))!
-    let dstImageBuffer = imageData.mutableBytes.assumingMemoryBound(to: Float32.self)
+    let colorSpace = CGColorSpaceCreateDeviceGray()
+    let bitmapInfo = CGImageAlphaInfo.none.rawValue
+    let bitmapContext = CGContext(data: data, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width, space: colorSpace, bitmapInfo: bitmapInfo)!
+    let image = bitmapContext.makeImage()!
+
+    let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeTIFF, 1, nil)!
+    CGImageDestinationAddImage(destination, image, nil)
+    CGImageDestinationFinalize(destination)
+
+    CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+
+    return true
+}
+func scaleDepthMapTo8Bit(depthMap: CVPixelBuffer) -> CVPixelBuffer {
+    let width = CVPixelBufferGetWidth(depthMap)
+    let height = CVPixelBufferGetHeight(depthMap)
+
+    CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+    let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float>.self)
+
+    var minDepth: Float = .greatestFiniteMagnitude
+    var maxDepth: Float = -.greatestFiniteMagnitude
     for i in 0 ..< width * height {
-        dstImageBuffer[i] = floatBuffer[i]
+        let depth = floatBuffer[i]
+        if depth.isFinite {
+            minDepth = min(minDepth, Float(depth))
+            maxDepth = max(maxDepth, Float(depth))
+        }
+    }
+
+    let scale = 255.0 / (maxDepth - minDepth)
+
+    var byteBuffer = [UInt8](repeating: 0, count: width * height)
+    for i in 0 ..< width * height {
+        byteBuffer[i] = UInt8((Float(floatBuffer[i]) - minDepth) * scale)
     }
 
     CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
 
-    guard let imgDataProvider = CGDataProvider(data: imageData) else {
-        print("Failed to create CGDataProvider.")
-        return false
-    }
-    
-    let colorSpace = CGColorSpaceCreateDeviceGray()
-    let bitmapInfo = CGBitmapInfo.floatComponents.rawValue | CGImageAlphaInfo.none.rawValue
-    guard let cgImage = CGImage(width: width, height: height, bitsPerComponent: 32, bitsPerPixel: 32, bytesPerRow: width * 4,
-                          space: colorSpace, bitmapInfo: CGBitmapInfo(rawValue: bitmapInfo),
-                          provider: imgDataProvider, decode: nil, shouldInterpolate: false,
-                          intent: .defaultIntent) else {
-        print("Failed to create CGImage.")
-        return false
+    var pixelBuffer: CVPixelBuffer?
+    let status = CVPixelBufferCreateWithBytes(nil, width, height, kCVPixelFormatType_OneComponent8, &byteBuffer, width, nil, nil, nil, &pixelBuffer)
+    if status != kCVReturnSuccess {
+        fatalError("Error: could not create new pixel buffer")
     }
 
-    let imageDestination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeTIFF, 1, nil)!
-    CGImageDestinationAddImage(imageDestination, cgImage, nil)
-    if !CGImageDestinationFinalize(imageDestination) {
-        print("Failed to write image to TIFF file.")
-        return false
-    }
-    
-    return true
+    return pixelBuffer!
+}
+func writeDepthMapToBinary(depthMap: CVPixelBuffer, url: URL) {
+    let width = CVPixelBufferGetWidth(depthMap)
+    let height = CVPixelBufferGetHeight(depthMap)
+
+    CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+    let data = Data(bytes: CVPixelBufferGetBaseAddress(depthMap)!, count: width * height * 4)
+    CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+
+    try? data.write(to: url)
 }
