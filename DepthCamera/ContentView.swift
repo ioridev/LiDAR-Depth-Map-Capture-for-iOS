@@ -50,29 +50,35 @@ struct ARViewContainer: UIViewRepresentable {
 
 class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     private var latestDepthMap: CVPixelBuffer?
+    private var latestImage: CVPixelBuffer?
 
+    
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         latestDepthMap = frame.sceneDepth?.depthMap
+        latestImage = frame.capturedImage
+
     }
     
     func saveDepthMap() {
-        guard let depthMap = latestDepthMap else {
-            print("Depth map is not available.")
+        guard let depthMap = latestDepthMap, let image = latestImage else {
+            print("Depth map or image is not available.")
             return
         }
-
-        let scaledDepthMap = scaleDepthMapTo8Bit(depthMap: depthMap)
-
+        
         let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let timestamp = Date().timeIntervalSince1970
-        let tiffFileURL = documentsDir.appendingPathComponent("\(timestamp)_scaled.tiff")
-        let binaryFileURL = documentsDir.appendingPathComponent("\(timestamp)_raw.bin")
-
-        writeDepthMapToTIFF(depthMap: scaledDepthMap, url: tiffFileURL)
-        writeDepthMapToBinary(depthMap: depthMap, url: binaryFileURL)
-
-        print("Depth map saved to \(tiffFileURL) and \(binaryFileURL)")
+        let depthTiffFileURL = documentsDir.appendingPathComponent("\(timestamp)_depth.tiff")
+        let depthBinaryFileURL = documentsDir.appendingPathComponent("\(timestamp)_depth.bin")
+        let imageFileURL = documentsDir.appendingPathComponent("\(timestamp)_image.jpg")
+        
+        let scaledDepthMap = scaleDepthMapTo8Bit(depthMap: depthMap)
+        writeDepthMapToTIFF(depthMap: scaledDepthMap, url: depthTiffFileURL)
+        writeDepthMapToBinary(depthMap: depthMap, url: depthBinaryFileURL)
+        saveImage(image: image, url: imageFileURL)
+        
+        print("Depth map saved to \(depthTiffFileURL) and \(depthBinaryFileURL)")
+        print("Image saved to \(imageFileURL)")
     }
 }
 
@@ -142,4 +148,18 @@ func writeDepthMapToBinary(depthMap: CVPixelBuffer, url: URL) {
     CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
 
     try? data.write(to: url)
+}
+
+
+func saveImage(image: CVPixelBuffer, url: URL) {
+    let ciImage = CIImage(cvPixelBuffer: image)
+    let context = CIContext()
+    if let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+       let jpegData = context.jpegRepresentation(of: ciImage, colorSpace: colorSpace, options: [:]) {
+        do {
+            try jpegData.write(to: url)
+        } catch {
+            print("Failed to save image: \(error)")
+        }
+    }
 }
