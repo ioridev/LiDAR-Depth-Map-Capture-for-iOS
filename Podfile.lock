@@ -1,0 +1,16 @@
+PODS:
+  - tiff-ios (4.0.2)
+
+DEPENDENCIES:
+  - tiff-ios (~> 4.0.1)
+
+SPEC REPOS:
+  trunk:
+    - tiff-ios
+
+SPEC CHECKSUMS:
+  tiff-ios: 1ad6750cd8bb3db75bd2977e40145813389786b9
+
+PODFILE CHECKSUM: baea43f676cfd7b3a853f887b5851cca628432d7
+
+COCOAPODS: 1.15.2
