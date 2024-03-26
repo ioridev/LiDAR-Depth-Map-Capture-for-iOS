@@ -5,6 +5,8 @@ import RealityKit
 import ImageIO
 import MobileCoreServices
 import CoreGraphics
+import tiff_ios
+
 
 
 struct ContentView : View {
@@ -72,9 +74,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         let depthBinaryFileURL = documentsDir.appendingPathComponent("\(timestamp)_depth.bin")
         let imageFileURL = documentsDir.appendingPathComponent("\(timestamp)_image.jpg")
         
-        let scaledDepthMap = scaleDepthMapTo8Bit(depthMap: depthMap)
-        writeDepthMapToTIFF(depthMap: scaledDepthMap, url: depthTiffFileURL)
-        writeDepthMapToBinary(depthMap: depthMap, url: depthBinaryFileURL)
+                writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthBinaryFileURL)
         saveImage(image: image, url: imageFileURL)
         
         print("Depth map saved to \(depthTiffFileURL) and \(depthBinaryFileURL)")
@@ -84,72 +84,58 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
 
 
 
-// Helper function to write depth map to a TIFF file
-func writeDepthMapToTIFF(depthMap: CVPixelBuffer, url: URL) -> Bool {
+
+func writeDepthMapToTIFFWithLibTIFF(depthMap: CVPixelBuffer, url: URL) -> Bool {
     let width = CVPixelBufferGetWidth(depthMap)
     let height = CVPixelBufferGetHeight(depthMap)
 
     CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
-    let data = CVPixelBufferGetBaseAddress(depthMap)!
+    guard let baseAddress = CVPixelBufferGetBaseAddress(depthMap) else {
+        CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+        return false
+    }
+    let bytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
 
-    let colorSpace = CGColorSpaceCreateDeviceGray()
-    let bitmapInfo = CGImageAlphaInfo.none.rawValue
-    let bitmapContext = CGContext(data: data, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width, space: colorSpace, bitmapInfo: bitmapInfo)!
-    let image = bitmapContext.makeImage()!
+    guard let rasters = TIFFRasters(width: Int32(width), andHeight: Int32(height), andSamplesPerPixel: 1, andSingleBitsPerSample: 32) else {
+        CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+        return false
+    }
 
-    let destination = CGImageDestinationCreateWithURL(url as CFURL, kUTTypeTIFF, 1, nil)!
-    CGImageDestinationAddImage(destination, image, nil)
-    CGImageDestinationFinalize(destination)
-
-    CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
-
-    return true
-}
-func scaleDepthMapTo8Bit(depthMap: CVPixelBuffer) -> CVPixelBuffer {
-    let width = CVPixelBufferGetWidth(depthMap)
-    let height = CVPixelBufferGetHeight(depthMap)
-
-    CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
-    let floatBuffer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthMap), to: UnsafeMutablePointer<Float>.self)
-
-    var minDepth: Float = .greatestFiniteMagnitude
-    var maxDepth: Float = -.greatestFiniteMagnitude
-    for i in 0 ..< width * height {
-        let depth = floatBuffer[i]
-        if depth.isFinite {
-            minDepth = min(minDepth, Float(depth))
-            maxDepth = max(maxDepth, Float(depth))
+    for y in 0..<height {
+        let pixelBytes = baseAddress.advanced(by: y * bytesPerRow)
+        let pixelBuffer = UnsafeBufferPointer<Float>(start: pixelBytes.assumingMemoryBound(to: Float.self), count: width)
+        for x in 0..<width {
+            rasters.setFirstPixelSampleAtX(Int32(x), andY: Int32(y), withValue: NSDecimalNumber(value: pixelBuffer[x]))
         }
     }
 
-    let scale = 255.0 / (maxDepth - minDepth)
-
-    var byteBuffer = [UInt8](repeating: 0, count: width * height)
-    for i in 0 ..< width * height {
-        byteBuffer[i] = UInt8((Float(floatBuffer[i]) - minDepth) * scale)
-    }
-
     CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
 
-    var pixelBuffer: CVPixelBuffer?
-    let status = CVPixelBufferCreateWithBytes(nil, width, height, kCVPixelFormatType_OneComponent8, &byteBuffer, width, nil, nil, nil, &pixelBuffer)
-    if status != kCVReturnSuccess {
-        fatalError("Error: could not create new pixel buffer")
+    let rowsPerStrip = UInt16(rasters.calculateRowsPerStrip(withPlanarConfiguration: Int32(TIFF_PLANAR_CONFIGURATION_CHUNKY)))
+
+    guard let directory = TIFFFileDirectory() else {
+        return false
     }
+    directory.setImageWidth(UInt16(width))
+    directory.setImageHeight(UInt16(height))
+    directory.setBitsPerSampleAsSingleValue(32)
+    directory.setCompression(UInt16(TIFF_COMPRESSION_NO))
+    directory.setPhotometricInterpretation(UInt16(TIFF_PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO))
+    directory.setSamplesPerPixel(1)
+    directory.setRowsPerStrip(rowsPerStrip)
+    directory.setPlanarConfiguration(UInt16(TIFF_PLANAR_CONFIGURATION_CHUNKY))
+    directory.setSampleFormatAsSingleValue(UInt16(TIFF_SAMPLE_FORMAT_FLOAT))
+    directory.writeRasters = rasters
 
-    return pixelBuffer!
+    guard let tiffImage = TIFFImage() else {
+        return false
+    }
+    tiffImage.addFileDirectory(directory)
+
+    TIFFWriter.writeTiff(withFile: url.path, andImage: tiffImage)
+
+    return true
 }
-func writeDepthMapToBinary(depthMap: CVPixelBuffer, url: URL) {
-    let width = CVPixelBufferGetWidth(depthMap)
-    let height = CVPixelBufferGetHeight(depthMap)
-
-    CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
-    let data = Data(bytes: CVPixelBufferGetBaseAddress(depthMap)!, count: width * height * 4)
-    CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
-
-    try? data.write(to: url)
-}
-
 
 func saveImage(image: CVPixelBuffer, url: URL) {
     let ciImage = CIImage(cvPixelBuffer: image)
