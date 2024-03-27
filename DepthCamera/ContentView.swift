@@ -71,13 +71,13 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let timestamp = Date().timeIntervalSince1970
     
-        let depthBinaryFileURL = documentsDir.appendingPathComponent("\(timestamp)_depth.tiff")
+        let depthFileURL = documentsDir.appendingPathComponent("\(timestamp)_depth.tiff")
         let imageFileURL = documentsDir.appendingPathComponent("\(timestamp)_image.jpg")
         
-                writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthBinaryFileURL)
+                writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
         saveImage(image: image, url: imageFileURL)
         
-        print("Depth map saved to \(depthBinaryFileURL)")
+        print("Depth map saved to \(depthFileURL)")
         print("Image saved to \(imageFileURL)")
     }
 }
