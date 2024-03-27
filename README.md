@@ -7,7 +7,7 @@ This iOS app is designed for professional users who need to capture full-resolut
 - Captures full-resolution depth maps from the LiDAR scanner
 - Saves depth maps as 32-bit floating-point TIFF images
 - Preserves the original depth values in meters
-- Simple and intuitive user interface
+- TODO:Simple and intuitive user interface
 
 ## How it works
 
