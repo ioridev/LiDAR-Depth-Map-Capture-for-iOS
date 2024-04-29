@@ -238,12 +238,15 @@ struct CaptureButtonPanelView: View {
                 Spacer()
             }
             HStack {
-              Spacer()
+                  /*
+              
+                                Spacer()
+              
                 Spacer()
                 Button( action: {
                       
                         }) {
-                    Text("次へ")
+                    Text("")
                                 .font(.system(size: 14)).bold()
 
                         .foregroundColor(.white)
@@ -256,6 +259,9 @@ struct CaptureButtonPanelView: View {
                  
                 .padding(.horizontal)
             }
+
+              */
+                 
         }
     }
 }
