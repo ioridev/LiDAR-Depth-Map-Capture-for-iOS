@@ -87,24 +87,35 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
 
     }
     
-    func saveDepthMap() {
-        guard let depthMap = latestDepthMap, let image = latestImage else {
-            print("Depth map or image is not available.")
-            return
-        }
-        
-        let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let timestamp = Date().timeIntervalSince1970
-    
-        let depthFileURL = documentsDir.appendingPathComponent("\(timestamp)_depth.tiff")
-        let imageFileURL = documentsDir.appendingPathComponent("\(timestamp)_image.jpg")
-        
-                writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
-        saveImage(image: image, url: imageFileURL)
-        
-        print("Depth map saved to \(depthFileURL)")
-        print("Image saved to \(imageFileURL)")
+func saveDepthMap() {
+    guard let depthMap = latestDepthMap, let image = latestImage else {
+        print("Depth map or image is not available.")
+        return
     }
+    
+    let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "yyyyMMdd"
+    let dateString = dateFormatter.string(from: Date())
+    let dateDirURL = documentsDir.appendingPathComponent(dateString)
+    
+    do {
+        try FileManager.default.createDirectory(at: dateDirURL, withIntermediateDirectories: true, attributes: nil)
+    } catch {
+        print("Failed to create directory: \(error)")
+        return
+    }
+    
+    let timestamp = Date().timeIntervalSince1970
+    let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.tiff")
+    let imageFileURL = dateDirURL.appendingPathComponent("\(timestamp)_image.jpg")
+    
+    writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
+    saveImage(image: image, url: imageFileURL)
+    
+    print("Depth map saved to \(depthFileURL)")
+    print("Image saved to \(imageFileURL)")
+}
 }
 
 
