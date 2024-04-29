@@ -14,20 +14,24 @@ struct ContentView : View {
     let previewCornerRadius: CGFloat = 15.0
 
     var body: some View {
+        
+        GeometryReader { geometry in
+            ZStack {
+                        // Make the entire background black.
+                        Color.black.edgesIgnoringSafeArea(.all)
         VStack {
-            GeometryReader { geometry in
+
                              let width = geometry.size.width
                              let height = width * 4 / 3 // 4:3 aspect ratio
                              ARViewContainer(arViewModel: arViewModel)
                                  .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
                                  .frame(width: width, height: height)
+            CaptureButtonPanelView(model: arViewModel,  width: geometry.size.width)
+
                          }
-            Button(action: {
-                arViewModel.saveDepthMap()
-            }) {
-                Text("Save Depth Map")
-            }
         }
+        }
+                 .environment(\.colorScheme, .dark)
     }
 }
 
@@ -78,6 +82,11 @@ struct ARViewContainer: UIViewRepresentable {
 class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     private var latestDepthMap: CVPixelBuffer?
     private var latestImage: CVPixelBuffer?
+    @Published var lastCapture: UIImage? = nil {
+          didSet {
+              print("lastCapture was set.")
+          }
+      }
 
     
     
@@ -112,6 +121,19 @@ func saveDepthMap() {
     
     writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
     saveImage(image: image, url: imageFileURL)
+    
+    
+    
+
+
+    let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
+
+    
+    DispatchQueue.main.async {
+                      self.lastCapture = uiImage
+                  }
+    
+        
     
     print("Depth map saved to \(depthFileURL)")
     print("Image saved to \(imageFileURL)")
@@ -185,3 +207,194 @@ func saveImage(image: CVPixelBuffer, url: URL) {
         }
     }
 }
+
+
+
+
+struct CaptureButtonPanelView: View {
+    @ObservedObject var model: ARViewModel
+    var width: CGFloat
+    @Environment(\.presentationMode) var presentationMode
+    @State private var showAlert = false // State variable to control alert visibility
+    
+ 
+
+
+
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            HStack {
+                ZStack(alignment: .topTrailing) {
+                    ThumbnailView( model: model)
+                        .frame(width: width / 3)
+                        .padding(.horizontal)
+                }
+                Spacer()
+            }
+            HStack {
+                Spacer()
+                CaptureButton(model: model)
+                Spacer()
+            }
+            HStack {
+              Spacer()
+                Spacer()
+                Button( action: {
+                      
+                        }) {
+                    Text("次へ")
+                                .font(.system(size: 14)).bold()
+
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(width: 60 , height: 60)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.white, lineWidth: 2)
+                        )
+                 
+                .padding(.horizontal)
+            }
+        }
+    }
+}
+    
+
+}
+    
+
+
+
+
+
+
+
+
+struct ThumbnailView: View {
+    private let thumbnailFrameWidth: CGFloat = 60.0
+    private let thumbnailFrameHeight: CGFloat = 60.0
+    private let thumbnailFrameCornerRadius: CGFloat = 10.0
+    private let thumbnailStrokeWidth: CGFloat = 2
+    
+
+    
+    @ObservedObject var model: ARViewModel
+    @Environment(\.presentationMode) var presentationMode
+
+    var body: some View {
+        Button(action: {
+
+        }) {
+            Group {
+                if let capture = model.lastCapture {
+                    ThumbnailImageView(uiImage: capture,
+                                       width: thumbnailFrameWidth,
+                                       height: thumbnailFrameHeight,
+                                       cornerRadius: thumbnailFrameCornerRadius,
+                                       strokeWidth: thumbnailStrokeWidth)
+                } else {
+                    Image(systemName: "photo.on.rectangle")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .padding(16)
+                        .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
+                        .foregroundColor(.primary)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
+                                .stroke(Color.white, lineWidth: thumbnailStrokeWidth)
+                        )
+                }
+            }
+            .onAppear {
+                print("ThumbnailView appeared")
+            }
+            .onChange(of: model.lastCapture) { newValue in
+                print("Last capture changed to: \(String(describing: newValue))")
+            }
+        }
+    }
+}
+
+
+
+
+
+
+struct ThumbnailImageView: View {
+    var uiImage: UIImage
+    var thumbnailFrameWidth: CGFloat
+    var thumbnailFrameHeight: CGFloat
+    var thumbnailFrameCornerRadius: CGFloat
+    var thumbnailStrokeWidth: CGFloat
+    
+    init(uiImage: UIImage, width: CGFloat, height: CGFloat, cornerRadius: CGFloat,
+         strokeWidth: CGFloat) {
+        self.uiImage = uiImage
+        self.thumbnailFrameWidth = width
+        self.thumbnailFrameHeight = height
+        self.thumbnailFrameCornerRadius = cornerRadius
+        self.thumbnailStrokeWidth = strokeWidth
+    }
+    var body: some View {
+        Image(uiImage: uiImage)
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
+            .cornerRadius(thumbnailFrameCornerRadius)
+            .clipped()
+            .overlay(RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
+                        .stroke(Color.primary, lineWidth: thumbnailStrokeWidth))
+            .shadow(radius: 10)
+    }
+}
+
+
+
+struct CaptureButton: View {
+    static let outerDiameter: CGFloat = 80
+    static let strokeWidth: CGFloat = 4
+    static let innerPadding: CGFloat = 10
+    static let innerDiameter: CGFloat = CaptureButton.outerDiameter -
+    CaptureButton.strokeWidth - CaptureButton.innerPadding
+    static let rootTwoOverTwo: CGFloat = CGFloat(2.0.squareRoot() / 2.0)
+    static let squareDiameter: CGFloat = CaptureButton.innerDiameter * CaptureButton.rootTwoOverTwo -
+    CaptureButton.innerPadding
+    
+    @ObservedObject var model: ARViewModel
+
+    init(model: ARViewModel) {
+        self.model = model
+    }
+    
+    
+    var body: some View {
+        Button(action: {
+            model.saveDepthMap()
+        },label: {
+            
+                ManualCaptureButtonView()
+        
+        })
+    }
+}
+
+
+
+struct ManualCaptureButtonView: View {
+    var body: some View {
+        ZStack {
+            Circle()
+                .strokeBorder(Color.white, lineWidth: CaptureButton.strokeWidth)
+                .frame(width: CaptureButton.outerDiameter,
+                       height: CaptureButton.outerDiameter,
+                       alignment: .center)
+            Circle()
+                .foregroundColor(Color.white)
+                .frame(width: CaptureButton.innerDiameter,
+                       height: CaptureButton.innerDiameter,
+                       alignment: .center)
+        }
+    }
+}
+
