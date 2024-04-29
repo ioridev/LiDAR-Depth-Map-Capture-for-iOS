@@ -11,10 +11,17 @@ import tiff_ios
 
 struct ContentView : View {
     @StateObject var arViewModel = ARViewModel()
+    let previewCornerRadius: CGFloat = 15.0
 
     var body: some View {
         VStack {
-            ARViewContainer(arViewModel: arViewModel)
+            GeometryReader { geometry in
+                             let width = geometry.size.width
+                             let height = width * 4 / 3 // 4:3 aspect ratio
+                             ARViewContainer(arViewModel: arViewModel)
+                                 .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
+                                 .frame(width: width, height: height)
+                         }
             Button(action: {
                 arViewModel.saveDepthMap()
             }) {
@@ -26,6 +33,18 @@ struct ContentView : View {
 
 struct ARViewContainer: UIViewRepresentable {
     @ObservedObject var arViewModel: ARViewModel
+    
+    func find4by3VideoFormat() -> ARConfiguration.VideoFormat? {
+           let availableFormats = ARWorldTrackingConfiguration.supportedVideoFormats
+           for format in availableFormats {
+               let resolution = format.imageResolution
+               if resolution.width / 4 == resolution.height / 3 {
+                   print("Using video format: \(format)")
+                   return format
+               }
+           }
+           return nil
+       }
 
 
 
@@ -40,6 +59,12 @@ struct ARViewContainer: UIViewRepresentable {
         }
 
         configuration.frameSemantics.insert(.sceneDepth)
+        if let format = find4by3VideoFormat() {
+                  configuration.videoFormat = format
+              } else {
+                  print("No 4:3 video format is available")
+              }
+
 
         arView.session.delegate = arViewModel
         arView.session.run(configuration)
