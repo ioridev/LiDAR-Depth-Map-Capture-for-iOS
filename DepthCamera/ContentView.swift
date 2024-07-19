@@ -132,7 +132,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         DispatchQueue.main.async {
             self.lastCapture = uiImage
         }
-        
+     
         
         
         print("Depth map saved to \(depthFileURL)")
@@ -288,43 +288,51 @@ struct ThumbnailView: View {
     @ObservedObject var model: ARViewModel
     @Environment(\.presentationMode) var presentationMode
     
+    @State private var isShowingFilePicker = false
+
     var body: some View {
-        Button(action: {
-            
-        }) {
-            Group {
-                if let capture = model.lastCapture {
-                    ThumbnailImageView(uiImage: capture,
-                                       width: thumbnailFrameWidth,
-                                       height: thumbnailFrameHeight,
-                                       cornerRadius: thumbnailFrameCornerRadius,
-                                       strokeWidth: thumbnailStrokeWidth)
-                } else {
-                    Image(systemName: "photo.on.rectangle")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .padding(16)
-                        .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
-                        .foregroundColor(.primary)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
-                                .stroke(Color.white, lineWidth: thumbnailStrokeWidth)
-                        )
-                }
-            }
-            .onAppear {
-                print("ThumbnailView appeared")
-            }
-            .onChange(of: model.lastCapture) { newValue in
-                print("Last capture changed to: \(String(describing: newValue))")
-            }
-        }
-    }
-}
+          Button(action: {
+              isShowingFilePicker = true
+          }) {
+              Group {
+                  Image(systemName: "photo.on.rectangle")
+                      .resizable()
+                      .aspectRatio(contentMode: .fit)
+                      .padding(16)
+                      .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
+                      .foregroundColor(.primary)
+                      .overlay(
+                          RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
+                              .stroke(Color.white, lineWidth: thumbnailStrokeWidth)
+                      )
+              }
+              .onAppear {
+                  // onAppear処理が必要な場合はここに記述
+              }
+          }
+          .sheet(isPresented: $isShowingFilePicker) {
+              DocumentPicker(directoryURL: getDocumentsDirectory())
+          }
+      }
+      
+      func getDocumentsDirectory() -> URL {
+          let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+          return paths[0]
+      }
+  }
 
-
-
-
+  struct DocumentPicker: UIViewControllerRepresentable {
+      let directoryURL: URL
+      
+      func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
+          let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder], asCopy: false)
+          picker.directoryURL = directoryURL
+          picker.modalPresentationStyle = .fullScreen
+          return picker
+      }
+      
+      func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+  }
 
 
 struct ThumbnailImageView: View {
