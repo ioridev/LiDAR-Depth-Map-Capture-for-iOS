@@ -56,13 +56,15 @@ struct ARViewContainer: UIViewRepresentable {
         let arView = ARView(frame: .zero)
         
         let configuration = ARWorldTrackingConfiguration()
-        configuration.sceneReconstruction = .meshWithClassification
         
         if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {
             configuration.sceneReconstruction = .meshWithClassification
         }
         
-        configuration.frameSemantics.insert(.sceneDepth)
+        if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
+                   configuration.frameSemantics.insert(.sceneDepth)
+               }
+        
         if let format = find4by3VideoFormat() {
             configuration.videoFormat = format
         } else {
