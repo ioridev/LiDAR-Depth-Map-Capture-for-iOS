@@ -2,6 +2,7 @@
 
 This iOS app is designed for professional users who need to capture full-resolution depth maps using the LiDAR scanner on their iPhone or iPad. It addresses the issue of depth maps being scaled down to 8-bit when using the standard iOS libraries, allowing you to capture and save depth maps with their original precision.
 
+App Store : [https://apps.apple.com/us/app/depth-camera-raw/id6557075309](https://apps.apple.com/us/app/depth-camera-raw/id6557075309)
 ## Features
 
 - Captures depth maps from the LiDAR scanner
