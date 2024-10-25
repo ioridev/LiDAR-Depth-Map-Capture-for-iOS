@@ -11,6 +11,7 @@ import tiff_ios
 
 struct ContentView : View {
     @StateObject var arViewModel = ARViewModel()
+    @State private var isVideoMode = false
     let previewCornerRadius: CGFloat = 15.0
     
     var body: some View {
@@ -84,6 +85,11 @@ struct ARViewContainer: UIViewRepresentable {
 class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     private var latestDepthMap: CVPixelBuffer?
     private var latestImage: CVPixelBuffer?
+    
+    @Published var isRecordingVideo = false
+    private var videoTimer: Timer?
+    private var videoStartTime: TimeInterval?
+    private var videoDirectoryURL: URL?
     @Published var lastCapture: UIImage? = nil {
         didSet {
             print("lastCapture was set.")
@@ -140,6 +146,75 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         print("Depth map saved to \(depthFileURL)")
         print("Image saved to \(imageFileURL)")
     }
+    
+    private func captureDepthImage() {
+            guard let depthMap = latestDepthMap, let image = latestImage, let videoDirURL = videoDirectoryURL else {
+                print("Depth map or image is not available.")
+                return
+            }
+
+            // Get current UNIX timestamp for the frame
+            let frameTimestamp = Date().timeIntervalSince1970
+
+            // File URLs for depth map and image
+            let depthFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_depth.tiff")
+            let imageFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_image.jpg")
+
+            // Save the depth map and image
+            writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
+            saveImage(image: image, url: imageFileURL)
+
+            // Update the last captured image for thumbnail
+            let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
+            DispatchQueue.main.async {
+                self.lastCapture = uiImage
+            }
+
+            print("Saved depth map and image at \(frameTimestamp)")
+    }
+    
+    func startVideoRecording() {
+            guard !isRecordingVideo else { return }
+            isRecordingVideo = true
+
+            // Get UNIX timestamp for the start time
+            videoStartTime = Date().timeIntervalSince1970
+
+            // Create directory named with the UNIX start time
+            if let startTime = videoStartTime {
+                let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+                videoDirectoryURL = documentsDir.appendingPathComponent("\(Int(startTime))")
+                do {
+                    try FileManager.default.createDirectory(at: videoDirectoryURL!, withIntermediateDirectories: true, attributes: nil)
+                    print("Created directory: \(videoDirectoryURL!.path)")
+                } catch {
+                    print("Failed to create directory: \(error)")
+                    isRecordingVideo = false
+                    return
+                }
+            }
+
+            // Start a timer to capture depth images every second
+            videoTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                self.captureDepthImage()
+            }
+        }
+
+        func stopVideoRecording() {
+            guard isRecordingVideo else { return }
+            isRecordingVideo = false
+
+            // Invalidate the timer
+            videoTimer?.invalidate()
+            videoTimer = nil
+
+            videoStartTime = nil
+            videoDirectoryURL = nil
+
+            print("Stopped video recording.")
+        }
+    
+    
 }
 
 
@@ -211,24 +286,40 @@ func saveImage(image: CVPixelBuffer, url: URL) {
 }
 
 
+struct VideoModeButton: View {
+    @ObservedObject var model: ARViewModel
+
+    var body: some View {
+        Button(action: {
+            if model.isRecordingVideo {
+                model.stopVideoRecording()
+            } else {
+                model.startVideoRecording()
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .strokeBorder(model.isRecordingVideo ? Color.white : Color.red, lineWidth: 4)
+                    .frame(width: 60, height: 60)
+                Circle()
+                    .foregroundColor(model.isRecordingVideo ? Color.red : Color.white)
+                    .frame(width: 50, height: 50)
+            }
+        }
+    }
+}
 
 
 struct CaptureButtonPanelView: View {
     @ObservedObject var model: ARViewModel
     var width: CGFloat
     @Environment(\.presentationMode) var presentationMode
-    @State private var showAlert = false // State variable to control alert visibility
-    
-    
-    
-    
-    
-    
+
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             HStack {
                 ZStack(alignment: .topTrailing) {
-                    ThumbnailView( model: model)
+                    ThumbnailView(model: model)
                         .frame(width: width / 3)
                         .padding(.horizontal)
                 }
@@ -236,48 +327,16 @@ struct CaptureButtonPanelView: View {
             }
             HStack {
                 Spacer()
-                CaptureButton(model: model)
+                // Capture Button
+//                CaptureButton(model: model) // photo button
+//                Spacer()
+                // Video Mode Button
+                VideoModeButton(model: model)
                 Spacer()
-            }
-            HStack {
-                /*
-                 
-                 Spacer()
-                 
-                 Spacer()
-                 Button( action: {
-                 
-                 }) {
-                 Text("")
-                 .font(.system(size: 14)).bold()
-                 
-                 .foregroundColor(.white)
-                 .padding()
-                 .frame(width: 60 , height: 60)
-                 .overlay(
-                 RoundedRectangle(cornerRadius: 10)
-                 .stroke(Color.white, lineWidth: 2)
-                 )
-                 
-                 .padding(.horizontal)
-                 }
-                 
-                 */
-                
             }
         }
     }
-    
-    
 }
-
-
-
-
-
-
-
-
 
 struct ThumbnailView: View {
     private let thumbnailFrameWidth: CGFloat = 60.0
@@ -309,7 +368,6 @@ struct ThumbnailView: View {
                       )
               }
               .onAppear {
-                  // onAppear処理が必要な場合はここに記述
               }
           }
           .sheet(isPresented: $isShowingFilePicker) {
