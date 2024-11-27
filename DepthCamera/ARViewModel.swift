@@ -21,10 +21,14 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         }
     }
     
-    
+    private var lastDepthUpdate: TimeInterval = 0
+    private let depthUpdateInterval: TimeInterval = 0.1 // 10fps (1/10秒)
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         latestDepthMap = frame.sceneDepth?.depthMap
         latestImage = frame.capturedImage
+        let currentTime = CACurrentMediaTime()
+        
+        if currentTime - lastDepthUpdate >= depthUpdateInterval {
         
         // DepthMapの処理と表示
         if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
@@ -34,6 +38,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         // ConfidenceMapの処理と表示
         if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
             processConfidenceMap(confidenceMap)
+        }
         }
         
     }
