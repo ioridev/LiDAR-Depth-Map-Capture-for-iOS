@@ -11,18 +11,78 @@ import tiff_ios
 
 struct ContentView : View {
     @StateObject var arViewModel = ARViewModel()
+    @State private var showDepthMap: Bool = true
+    @State private var showConfidenceMap: Bool = true
     let previewCornerRadius: CGFloat = 15.0
     
     var body: some View {
         
         GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = width * 4 / 3 // 4:3 aspect ratio
             ZStack {
                 // Make the entire background black.
                 Color.black.edgesIgnoringSafeArea(.all)
                 VStack {
+                    if showDepthMap, let depthImage = arViewModel.processedDepthImage {
+                        Image(uiImage: depthImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: width * 0.3, height: width * 0.3)
+                            .position(x: width * 0.8, y: height * 0.2)
+                            .opacity(0.8)
+                    }
                     
-                    let width = geometry.size.width
-                    let height = width * 4 / 3 // 4:3 aspect ratio
+                    if showConfidenceMap, let confidenceImage = arViewModel.processedConfidenceImage {
+                        Image(uiImage: confidenceImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: width * 0.3, height: width * 0.3)
+                            .position(x: width * 0.8, y: height * 0.4)
+                            .opacity(0.8)
+                         
+                    }
+                    
+
+                        VStack {
+                            HStack {
+                                Spacer()
+
+                                Button(action: {
+                                    showDepthMap.toggle()
+                                }) {
+                                    Text("Depth")
+                                        .foregroundColor(.white)
+                                        .padding(6)
+                                        .background(
+                                            Color.black.opacity(showDepthMap ? 0.8 : 0.6)
+                                        )
+                                        .cornerRadius(8)
+                                }
+                                
+                                Button(action: {
+                                    showConfidenceMap.toggle()
+                                }) {
+                                    Text("Confidence")
+                                        .foregroundColor(.white)
+                                        .padding(6)
+                                        .background(
+                                            Color.black.opacity(showConfidenceMap ? 0.8 : 0.6)
+                                        )
+                                        .cornerRadius(8)
+                                }
+                                .padding(.leading, 8)
+                                
+                                Spacer()
+                            }
+                            .padding(.top, 16)
+                            .padding(.trailing, 16)
+                            
+                            Spacer()
+                        }
+        
+              
+       
                     ARViewContainer(arViewModel: arViewModel)
                         .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
                         .frame(width: width, height: height)
