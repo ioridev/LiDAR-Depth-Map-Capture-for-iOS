@@ -8,6 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		71C3B3AD7A98BA3561007192 /* Pods_DepthCameraTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */; };
+		899DD7032CF71263004FE108 /* ARViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7022CF71263004FE108 /* ARViewModel.swift */; };
+		899DD7052CF71285004FE108 /* ARViewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7042CF71285004FE108 /* ARViewContainer.swift */; };
+		899DD7072CF712D2004FE108 /* ThumbnailImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7062CF712D2004FE108 /* ThumbnailImageView.swift */; };
+		899DD7092CF7130A004FE108 /* CaptureButtonPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7082CF7130A004FE108 /* CaptureButtonPanelView.swift */; };
+		899DD70B2CF71336004FE108 /* ThumbnailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD70A2CF71336004FE108 /* ThumbnailView.swift */; };
+		899DD70D2CF7135D004FE108 /* DocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD70C2CF7135D004FE108 /* DocumentPicker.swift */; };
+		899DD70F2CF71376004FE108 /* CaptureButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD70E2CF71376004FE108 /* CaptureButton.swift */; };
+		899DD7112CF713AC004FE108 /* ManualCaptureButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7102CF713AC004FE108 /* ManualCaptureButtonView.swift */; };
 		89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6171D2B14740A00280111 /* DepthCameraApp.swift */; };
 		89B617202B14740A00280111 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6171F2B14740A00280111 /* ContentView.swift */; };
 		89B617222B14740B00280111 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89B617212B14740B00280111 /* Assets.xcassets */; };
@@ -15,6 +23,7 @@
 		89B617302B14740B00280111 /* DepthCameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6172F2B14740B00280111 /* DepthCameraTests.swift */; };
 		89B6173A2B14740B00280111 /* DepthCameraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B617392B14740B00280111 /* DepthCameraUITests.swift */; };
 		89B6173C2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */; };
+		89DE42E22CB3DECF00D43C0A /* color 2.glb in Resources */ = {isa = PBXBuildFile; fileRef = 89DE42E12CB3DECF00D43C0A /* color 2.glb */; };
 		AF6D6D435FA0400B15234CB6 /* Pods_DepthCamera_DepthCameraUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */; };
 		DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */; };
 /* End PBXBuildFile section */
@@ -40,6 +49,14 @@
 		5AD708927E8DD9D65325735B /* Pods-DepthCameraTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCameraTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		71F5030F13FAB4BF6261DA2C /* Pods-DepthCamera-DepthCameraUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		899DD7022CF71263004FE108 /* ARViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewModel.swift; sourceTree = "<group>"; };
+		899DD7042CF71285004FE108 /* ARViewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewContainer.swift; sourceTree = "<group>"; };
+		899DD7062CF712D2004FE108 /* ThumbnailImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailImageView.swift; sourceTree = "<group>"; };
+		899DD7082CF7130A004FE108 /* CaptureButtonPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureButtonPanelView.swift; sourceTree = "<group>"; };
+		899DD70A2CF71336004FE108 /* ThumbnailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailView.swift; sourceTree = "<group>"; };
+		899DD70C2CF7135D004FE108 /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
+		899DD70E2CF71376004FE108 /* CaptureButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureButton.swift; sourceTree = "<group>"; };
+		899DD7102CF713AC004FE108 /* ManualCaptureButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualCaptureButtonView.swift; sourceTree = "<group>"; };
 		89B6171A2B14740A00280111 /* DepthCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DepthCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89B6171D2B14740A00280111 /* DepthCameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraApp.swift; sourceTree = "<group>"; };
 		89B6171F2B14740A00280111 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -53,6 +70,7 @@
 		89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		89B6174A2B14802900280111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		89DE42E12CB3DECF00D43C0A /* color 2.glb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "color 2.glb"; sourceTree = "<group>"; };
 		8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCamera_DepthCameraUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -116,8 +134,16 @@
 			children = (
 				89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */,
 				89B6174A2B14802900280111 /* Info.plist */,
-				89B6171D2B14740A00280111 /* DepthCameraApp.swift */,
+				899DD7042CF71285004FE108 /* ARViewContainer.swift */,
+				899DD7022CF71263004FE108 /* ARViewModel.swift */,
 				89B6171F2B14740A00280111 /* ContentView.swift */,
+				899DD7102CF713AC004FE108 /* ManualCaptureButtonView.swift */,
+				899DD70E2CF71376004FE108 /* CaptureButton.swift */,
+				899DD70C2CF7135D004FE108 /* DocumentPicker.swift */,
+				899DD70A2CF71336004FE108 /* ThumbnailView.swift */,
+				899DD7082CF7130A004FE108 /* CaptureButtonPanelView.swift */,
+				899DD7062CF712D2004FE108 /* ThumbnailImageView.swift */,
+				89B6171D2B14740A00280111 /* DepthCameraApp.swift */,
 				89B617212B14740B00280111 /* Assets.xcassets */,
 				89B617232B14740B00280111 /* DepthCamera.entitlements */,
 				89B617242B14740B00280111 /* Preview Content */,
@@ -166,6 +192,7 @@
 		C0163DDF423E92E8B9F2B809 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				89DE42E12CB3DECF00D43C0A /* color 2.glb */,
 				E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */,
 				8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */,
 				5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */,
@@ -282,6 +309,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89DE42E22CB3DECF00D43C0A /* color 2.glb in Resources */,
 				89B617262B14740B00280111 /* Preview Assets.xcassets in Resources */,
 				89B617222B14740B00280111 /* Assets.xcassets in Resources */,
 			);
@@ -411,7 +439,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				899DD7092CF7130A004FE108 /* CaptureButtonPanelView.swift in Sources */,
+				899DD7112CF713AC004FE108 /* ManualCaptureButtonView.swift in Sources */,
+				899DD7032CF71263004FE108 /* ARViewModel.swift in Sources */,
+				899DD7072CF712D2004FE108 /* ThumbnailImageView.swift in Sources */,
+				899DD7052CF71285004FE108 /* ARViewContainer.swift in Sources */,
+				899DD70D2CF7135D004FE108 /* DocumentPicker.swift in Sources */,
 				89B617202B14740A00280111 /* ContentView.swift in Sources */,
+				899DD70B2CF71336004FE108 /* ThumbnailView.swift in Sources */,
+				899DD70F2CF71376004FE108 /* CaptureButton.swift in Sources */,
 				89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
