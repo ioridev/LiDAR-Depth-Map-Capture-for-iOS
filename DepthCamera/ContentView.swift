@@ -22,11 +22,12 @@ struct ContentView : View {
                 Color.black.edgesIgnoringSafeArea(.all)
                 VStack {
                     
-                    let width = geometry.size.width
+                    let width = geometry.size.width/6 // trying to save battery ... don't even really need to see the preview ... hopefully making it much smaller will help
                     let height = width * 4 / 3 // 4:3 aspect ratio
                     ARViewContainer(arViewModel: arViewModel)
                         .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
                         .frame(width: width, height: height)
+                    Spacer()
                     CaptureButtonPanelView(model: arViewModel,  width: geometry.size.width)
                     
                 }
@@ -176,6 +177,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     func startVideoRecording() {
             guard !isRecordingVideo else { return }
             isRecordingVideo = true
+            UIScreen.main.brightness = CGFloat(0.01)
 
             // Get UNIX timestamp for the start time
             videoStartTime = Date().timeIntervalSince1970
@@ -203,6 +205,8 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         func stopVideoRecording() {
             guard isRecordingVideo else { return }
             isRecordingVideo = false
+            UIScreen.main.brightness = CGFloat(0.25)
+
 
             // Invalidate the timer
             videoTimer?.invalidate()
@@ -298,12 +302,18 @@ struct VideoModeButton: View {
             }
         }) {
             ZStack {
-                Circle()
-                    .strokeBorder(model.isRecordingVideo ? Color.white : Color.red, lineWidth: 4)
-                    .frame(width: 60, height: 60)
-                Circle()
-                    .foregroundColor(model.isRecordingVideo ? Color.red : Color.white)
-                    .frame(width: 50, height: 50)
+                if model.isRecordingVideo {
+                    Rectangle()
+                        .foregroundColor(Color.white)
+                        .frame(width: 165, height: 165)
+                    Rectangle()
+                        .foregroundColor(Color.red)
+                        .frame(width: 150, height: 150)
+                } else {
+                    Circle()
+                        .foregroundColor(Color.white)
+                        .frame(width: 150, height: 150)
+                }
             }
         }
     }
@@ -426,7 +436,7 @@ struct ThumbnailImageView: View {
 
 
 struct CaptureButton: View {
-    static let outerDiameter: CGFloat = 80
+    static let outerDiameter: CGFloat = 160
     static let strokeWidth: CGFloat = 4
     static let innerPadding: CGFloat = 10
     static let innerDiameter: CGFloat = CaptureButton.outerDiameter -

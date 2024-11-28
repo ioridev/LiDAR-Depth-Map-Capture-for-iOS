@@ -11,7 +11,12 @@ import SwiftUI
 struct DepthCameraApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true // Prevent screen locking
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false // Re-enable screen locking
+            }
         }
     }
 }
