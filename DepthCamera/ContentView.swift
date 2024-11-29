@@ -10,6 +10,7 @@ import tiff_ios
 
 
 struct ContentView : View {
+    var deviceViewModel: DeviceViewModel
     @StateObject var arViewModel = ARViewModel()
     @State private var isVideoMode = false
     let previewCornerRadius: CGFloat = 15.0
@@ -28,7 +29,7 @@ struct ContentView : View {
                         .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
                         .frame(width: width, height: height)
                     Spacer()
-                    CaptureButtonPanelView(model: arViewModel,  width: geometry.size.width)
+                    CaptureButtonPanelView(deviceViewModel: deviceViewModel, model: arViewModel,  width: geometry.size.width)
                     
                 }
             }
@@ -321,6 +322,7 @@ struct VideoModeButton: View {
 
 
 struct CaptureButtonPanelView: View {
+    let deviceViewModel: DeviceViewModel
     @ObservedObject var model: ARViewModel
     var width: CGFloat
     @Environment(\.presentationMode) var presentationMode
@@ -342,7 +344,9 @@ struct CaptureButtonPanelView: View {
 //                Spacer()
                 // Video Mode Button
                 VideoModeButton(model: model)
-                Spacer()
+                Button("Send message") {
+                    deviceViewModel.sendMessage("hello, world")
+                }
             }
         }
     }

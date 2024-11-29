@@ -15,6 +15,8 @@
 		89B617302B14740B00280111 /* DepthCameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6172F2B14740B00280111 /* DepthCameraTests.swift */; };
 		89B6173A2B14740B00280111 /* DepthCameraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B617392B14740B00280111 /* DepthCameraUITests.swift */; };
 		89B6173C2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */; };
+		8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */ = {isa = PBXBuildFile; productRef = 8B0C60F32CF8AE99004769D9 /* ConnectIQ */; };
+		8B0C60F82CF8CB07004769D9 /* DeviceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0C60F72CF8CAFF004769D9 /* DeviceViewModel.swift */; };
 		AF6D6D435FA0400B15234CB6 /* Pods_DepthCamera_DepthCameraUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */; };
 		DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */; };
 /* End PBXBuildFile section */
@@ -53,6 +55,7 @@
 		89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		89B6174A2B14802900280111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		8B0C60F72CF8CAFF004769D9 /* DeviceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceViewModel.swift; sourceTree = "<group>"; };
 		8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCamera_DepthCameraUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -67,6 +70,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */,
+				8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,6 +121,7 @@
 				89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */,
 				89B6174A2B14802900280111 /* Info.plist */,
 				89B6171D2B14740A00280111 /* DepthCameraApp.swift */,
+				8B0C60F72CF8CAFF004769D9 /* DeviceViewModel.swift */,
 				89B6171F2B14740A00280111 /* ContentView.swift */,
 				89B617212B14740B00280111 /* Assets.xcassets */,
 				89B617232B14740B00280111 /* DepthCamera.entitlements */,
@@ -266,6 +271,9 @@
 				Base,
 			);
 			mainGroup = 89B617112B14740A00280111;
+			packageReferences = (
+				8B0C60F22CF8AE99004769D9 /* XCRemoteSwiftPackageReference "connectiq-companion-app-sdk-ios" */,
+			);
 			productRefGroup = 89B6171B2B14740A00280111 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -411,6 +419,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B0C60F82CF8CB07004769D9 /* DeviceViewModel.swift in Sources */,
 				89B617202B14740A00280111 /* ContentView.swift in Sources */,
 				89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */,
 			);
@@ -574,7 +583,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DepthCamera/Preview Content\"";
-				DEVELOPMENT_TEAM = Q4LXC2U6S4;
+				DEVELOPMENT_TEAM = 6Q69T2CBY8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -582,6 +591,8 @@
 				INFOPLIST_FILE = DepthCamera/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Depth Camera RAW";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to garmin connect for data exchange";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Communicate with ConnectIQ MBTPROXIMITY app";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Use the camera to obtain photographs and depth maps.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -599,7 +610,15 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = software.fulton.dcamera;
+				OTHER_LDFLAGS = (
+					"-Objc",
+					"$(inherited)",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"tiff_ios\"",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mybiketraffic.DepthCamera;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -623,7 +642,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DepthCamera/Preview Content\"";
-				DEVELOPMENT_TEAM = Q4LXC2U6S4;
+				DEVELOPMENT_TEAM = 6Q69T2CBY8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -631,6 +650,8 @@
 				INFOPLIST_FILE = DepthCamera/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Depth Camera RAW";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to garmin connect for data exchange";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Communicate with ConnectIQ MBTPROXIMITY app";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Use the camera to obtain photographs and depth maps.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -648,7 +669,15 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = software.fulton.dcamera;
+				OTHER_LDFLAGS = (
+					"-Objc",
+					"$(inherited)",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"tiff_ios\"",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mybiketraffic.DepthCamera;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -795,6 +824,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8B0C60F22CF8AE99004769D9 /* XCRemoteSwiftPackageReference "connectiq-companion-app-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/garmin/connectiq-companion-app-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8B0C60F32CF8AE99004769D9 /* ConnectIQ */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8B0C60F22CF8AE99004769D9 /* XCRemoteSwiftPackageReference "connectiq-companion-app-sdk-ios" */;
+			productName = ConnectIQ;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 89B617122B14740A00280111 /* Project object */;
 }
