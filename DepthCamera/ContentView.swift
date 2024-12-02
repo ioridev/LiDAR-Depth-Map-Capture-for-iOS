@@ -34,6 +34,9 @@ struct ContentView : View {
                 }
             }
         }
+        .onAppear() {
+            deviceViewModel.setModel(arViewModel)
+        }
         .environment(\.colorScheme, .dark)
     }
 }
@@ -292,21 +295,24 @@ func saveImage(image: CVPixelBuffer, url: URL) {
 
 
 struct VideoModeButton: View {
+    let deviceViewModel: DeviceViewModel
     @ObservedObject var model: ARViewModel
 
     var body: some View {
         Button(action: {
             if model.isRecordingVideo {
                 model.stopVideoRecording()
+                deviceViewModel.sendMessage("stopped")
             } else {
                 model.startVideoRecording()
+                deviceViewModel.sendMessage("started")
             }
         }) {
             ZStack {
                 if model.isRecordingVideo {
                     Rectangle()
                         .foregroundColor(Color.white)
-                        .frame(width: 165, height: 165)
+                        .frame(width: 175, height: 175)
                     Rectangle()
                         .foregroundColor(Color.red)
                         .frame(width: 150, height: 150)
@@ -339,14 +345,8 @@ struct CaptureButtonPanelView: View {
             }
             HStack {
                 Spacer()
-                // Capture Button
-//                CaptureButton(model: model) // photo button
-//                Spacer()
-                // Video Mode Button
-                VideoModeButton(model: model)
-                Button("Send message") {
-                    deviceViewModel.sendMessage("hello, world")
-                }
+                VideoModeButton(deviceViewModel: deviceViewModel, model: model)
+                Spacer()
             }
         }
     }
