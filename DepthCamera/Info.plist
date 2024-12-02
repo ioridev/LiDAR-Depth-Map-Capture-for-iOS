@@ -26,5 +26,9 @@
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
+	<key>NSMotionUsageDescription</key>
+	<string>This app needs access to motion data to record detailed orientation info with your photos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to your location to record metadata for captured photos.</string>
 </dict>
 </plist>

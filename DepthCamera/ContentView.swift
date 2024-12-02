@@ -7,8 +7,6 @@ import MobileCoreServices
 import CoreGraphics
 import tiff_ios
 
-
-
 struct ContentView : View {
     var deviceViewModel: DeviceViewModel
     @StateObject var arViewModel = ARViewModel()
@@ -88,6 +86,7 @@ struct ARViewContainer: UIViewRepresentable {
 }
 
 class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
+    private var sensorManager = SensorManager()
     private var latestDepthMap: CVPixelBuffer?
     private var latestImage: CVPixelBuffer?
     
@@ -131,7 +130,8 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         let timestamp = Date().timeIntervalSince1970
         let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.tiff")
         let imageFileURL = dateDirURL.appendingPathComponent("\(timestamp)_image.jpg")
-        
+        let metaFileURL = dateDirURL.appendingPathComponent("\(timestamp)_meta.txt")
+        sensorManager.saveData(textFileURL: metaFileURL, timestamp: "\(timestamp)")
         writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
         saveImage(image: image, url: imageFileURL)
         
@@ -164,6 +164,8 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             // File URLs for depth map and image
             let depthFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_depth.tiff")
             let imageFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_image.jpg")
+            let metaFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_meta.txt")
+            sensorManager.saveData(textFileURL: metaFileURL, timestamp: "\(Int(frameTimestamp))")
 
             // Save the depth map and image
             writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
@@ -180,9 +182,13 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     
     func startVideoRecording() {
             guard !isRecordingVideo else { return }
+        
             isRecordingVideo = true
             UIScreen.main.brightness = CGFloat(0.01)
 
+            // tell the sensor manager to start collecting location and accelerometer data
+            sensorManager.start()
+        
             // Get UNIX timestamp for the start time
             videoStartTime = Date().timeIntervalSince1970
 
@@ -211,6 +217,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             isRecordingVideo = false
             UIScreen.main.brightness = CGFloat(0.25)
 
+            sensorManager.stop() // no longer need to collect locatin/accel data
 
             // Invalidate the timer
             videoTimer?.invalidate()
