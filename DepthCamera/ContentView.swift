@@ -21,7 +21,7 @@ struct ContentView : View {
                 Color.black.edgesIgnoringSafeArea(.all)
                 VStack {
                     
-                    let width = geometry.size.width/6 // trying to save battery ... don't even really need to see the preview ... hopefully making it much smaller will help
+                    let width = geometry.size.width/9 // trying to save battery ... don't even really need to see the preview ... hopefully making it much smaller will help
                     let height = width * 4 / 3 // 4:3 aspect ratio
                     ARViewContainer(arViewModel: arViewModel)
                         .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
@@ -207,7 +207,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             }
 
             // Start a timer to capture depth images every second
-            videoTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            videoTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 self.captureDepthImage()
             }
         }
@@ -215,7 +215,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         func stopVideoRecording() {
             guard isRecordingVideo else { return }
             isRecordingVideo = false
-            UIScreen.main.brightness = CGFloat(0.25)
+            UIScreen.main.brightness = CGFloat(0.01)
 
             sensorManager.stop() // no longer need to collect locatin/accel data
 
