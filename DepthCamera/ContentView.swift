@@ -99,6 +99,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             print("lastCapture was set.")
         }
     }
+    private var oddevenFrame: Int = 0
     
     
     
@@ -128,17 +129,14 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         }
         
         let timestamp = Date().timeIntervalSince1970
-        let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.tiff")
-        let imageFileURL = dateDirURL.appendingPathComponent("\(timestamp)_image.jpg")
-        let metaFileURL = dateDirURL.appendingPathComponent("\(timestamp)_meta.txt")
+        let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth\(oddevenFrame).tiff")
+        let imageFileURL = dateDirURL.appendingPathComponent("\(timestamp)_image\(oddevenFrame).jpg")
+        let metaFileURL = dateDirURL.appendingPathComponent("\(timestamp)_meta\(oddevenFrame).txt")
         sensorManager.saveData(textFileURL: metaFileURL, timestamp: "\(timestamp)")
         writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
         saveImage(image: image, url: imageFileURL)
-        
-        
-        
-        
-        
+        oddevenFrame = (oddevenFrame + 1) % 2 // alternate between 0 and 1 ... need to mod this by 3 for 3 fps filenames
+
         let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
         
         
@@ -153,31 +151,32 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     }
     
     private func captureDepthImage() {
-            guard let depthMap = latestDepthMap, let image = latestImage, let videoDirURL = videoDirectoryURL else {
-                print("Depth map or image is not available.")
-                return
-            }
+        guard let depthMap = latestDepthMap, let image = latestImage, let videoDirURL = videoDirectoryURL else {
+            print("Depth map or image is not available.")
+            return
+        }
 
-            // Get current UNIX timestamp for the frame
-            let frameTimestamp = Date().timeIntervalSince1970
+        // Get current UNIX timestamp for the frame
+        let frameTimestamp = Date().timeIntervalSince1970
 
-            // File URLs for depth map and image
-            let depthFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_depth.tiff")
-            let imageFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_image.jpg")
-            let metaFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_meta.txt")
-            sensorManager.saveData(textFileURL: metaFileURL, timestamp: "\(Int(frameTimestamp))")
+        // File URLs for depth map and image
+        let depthFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_depth\(oddevenFrame).tiff")
+        let imageFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_image\(oddevenFrame).jpg")
+        let metaFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_meta\(oddevenFrame).txt")
+        sensorManager.saveData(textFileURL: metaFileURL, timestamp: "\(Int(frameTimestamp))")
+        oddevenFrame = (oddevenFrame + 1) % 2 // alternate between 0 and 1 ... need to mod this by 3 for 3 fps filenames
+    
+        // Save the depth map and image
+        writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
+        saveImage(image: image, url: imageFileURL)
 
-            // Save the depth map and image
-            writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
-            saveImage(image: image, url: imageFileURL)
+        // Update the last captured image for thumbnail
+        let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
+        DispatchQueue.main.async {
+            self.lastCapture = uiImage
+        }
 
-            // Update the last captured image for thumbnail
-            let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
-            DispatchQueue.main.async {
-                self.lastCapture = uiImage
-            }
-
-            print("Saved depth map and image at \(frameTimestamp)")
+        print("Saved depth map and image at \(frameTimestamp)")
     }
     
     func startVideoRecording() {
