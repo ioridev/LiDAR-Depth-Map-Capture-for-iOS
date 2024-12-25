@@ -3,18 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		71C3B3AD7A98BA3561007192 /* Pods_DepthCameraTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */; };
 		89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6171D2B14740A00280111 /* DepthCameraApp.swift */; };
-		89B617202B14740A00280111 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6171F2B14740A00280111 /* ContentView.swift */; };
 		89B617222B14740B00280111 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89B617212B14740B00280111 /* Assets.xcassets */; };
 		89B617262B14740B00280111 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89B617252B14740B00280111 /* Preview Assets.xcassets */; };
 		89B617302B14740B00280111 /* DepthCameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6172F2B14740B00280111 /* DepthCameraTests.swift */; };
 		89B6173A2B14740B00280111 /* DepthCameraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B617392B14740B00280111 /* DepthCameraUITests.swift */; };
 		89B6173C2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */; };
+		8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */ = {isa = PBXBuildFile; productRef = 8B0C60F32CF8AE99004769D9 /* ConnectIQ */; };
+		8B6D48462CFDEBF4000A4C4A /* SensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6D48452CFDE988000A4C4A /* SensorManager.swift */; };
 		AF6D6D435FA0400B15234CB6 /* Pods_DepthCamera_DepthCameraUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */; };
 		DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */; };
 /* End PBXBuildFile section */
@@ -42,7 +43,6 @@
 		71F5030F13FAB4BF6261DA2C /* Pods-DepthCamera-DepthCameraUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		89B6171A2B14740A00280111 /* DepthCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DepthCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89B6171D2B14740A00280111 /* DepthCameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraApp.swift; sourceTree = "<group>"; };
-		89B6171F2B14740A00280111 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		89B617212B14740B00280111 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		89B617232B14740B00280111 /* DepthCamera.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DepthCamera.entitlements; sourceTree = "<group>"; };
 		89B617252B14740B00280111 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -53,6 +53,7 @@
 		89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		89B6174A2B14802900280111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		8B6D48452CFDE988000A4C4A /* SensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorManager.swift; sourceTree = "<group>"; };
 		8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCamera_DepthCameraUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -61,12 +62,18 @@
 		FEB00714AEB0453F28A4DA1F /* Pods-DepthCamera.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera.debug.xcconfig"; path = "Target Support Files/Pods-DepthCamera/Pods-DepthCamera.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		8B6D48592D05FFF4000A4C4A /* Views */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Views; sourceTree = "<group>"; };
+		8B6D485A2D05FFFB000A4C4A /* ViewModels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ViewModels; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
 		89B617172B14740A00280111 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */,
+				8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -114,13 +121,15 @@
 		89B6171C2B14740A00280111 /* DepthCamera */ = {
 			isa = PBXGroup;
 			children = (
+				8B6D485A2D05FFFB000A4C4A /* ViewModels */,
+				8B6D48592D05FFF4000A4C4A /* Views */,
 				89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */,
 				89B6174A2B14802900280111 /* Info.plist */,
 				89B6171D2B14740A00280111 /* DepthCameraApp.swift */,
-				89B6171F2B14740A00280111 /* ContentView.swift */,
 				89B617212B14740B00280111 /* Assets.xcassets */,
 				89B617232B14740B00280111 /* DepthCamera.entitlements */,
 				89B617242B14740B00280111 /* Preview Content */,
+				8B6D48452CFDE988000A4C4A /* SensorManager.swift */,
 			);
 			path = DepthCamera;
 			sourceTree = "<group>";
@@ -189,6 +198,10 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8B6D48592D05FFF4000A4C4A /* Views */,
+				8B6D485A2D05FFFB000A4C4A /* ViewModels */,
 			);
 			name = DepthCamera;
 			productName = DepthCamera;
@@ -266,6 +279,9 @@
 				Base,
 			);
 			mainGroup = 89B617112B14740A00280111;
+			packageReferences = (
+				8B0C60F22CF8AE99004769D9 /* XCRemoteSwiftPackageReference "connectiq-companion-app-sdk-ios" */,
+			);
 			productRefGroup = 89B6171B2B14740A00280111 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -411,8 +427,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				89B617202B14740A00280111 /* ContentView.swift in Sources */,
 				89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */,
+				8B6D48462CFDEBF4000A4C4A /* SensorManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -574,7 +590,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DepthCamera/Preview Content\"";
-				DEVELOPMENT_TEAM = Q4LXC2U6S4;
+				DEVELOPMENT_TEAM = 6Q69T2CBY8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -582,6 +598,8 @@
 				INFOPLIST_FILE = DepthCamera/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Depth Camera RAW";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to garmin connect for data exchange";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Communicate with ConnectIQ MBTPROXIMITY app";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Use the camera to obtain photographs and depth maps.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -599,7 +617,15 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = software.fulton.dcamera;
+				OTHER_LDFLAGS = (
+					"-Objc",
+					"$(inherited)",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"tiff_ios\"",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mybiketraffic.DepthCamera;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -623,7 +649,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"DepthCamera/Preview Content\"";
-				DEVELOPMENT_TEAM = Q4LXC2U6S4;
+				DEVELOPMENT_TEAM = 6Q69T2CBY8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -631,6 +657,8 @@
 				INFOPLIST_FILE = DepthCamera/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Depth Camera RAW";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Connection to garmin connect for data exchange";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Communicate with ConnectIQ MBTPROXIMITY app";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Use the camera to obtain photographs and depth maps.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -648,7 +676,15 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = software.fulton.dcamera;
+				OTHER_LDFLAGS = (
+					"-Objc",
+					"$(inherited)",
+					"-framework",
+					"\"Foundation\"",
+					"-framework",
+					"\"tiff_ios\"",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mybiketraffic.DepthCamera;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = auto;
@@ -795,6 +831,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8B0C60F22CF8AE99004769D9 /* XCRemoteSwiftPackageReference "connectiq-companion-app-sdk-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/garmin/connectiq-companion-app-sdk-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8B0C60F32CF8AE99004769D9 /* ConnectIQ */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8B0C60F22CF8AE99004769D9 /* XCRemoteSwiftPackageReference "connectiq-companion-app-sdk-ios" */;
+			productName = ConnectIQ;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 89B617122B14740A00280111 /* Project object */;
 }
