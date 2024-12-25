@@ -2,13 +2,24 @@ import SwiftUI
 
 class MBTViewModel: ObservableObject {
 
-    let CLIENT_ID = ""
-    let CLIENT_SECRET = ""
+    // in lieu of the normal OAUTH2 flow,
+    // user receives an oauth2 access_token unique to their account during
+    // login via special param ... still normal oauth2 with clientid and secret
+    // but all done internally on the backend
+    // since user has valid access/refresh token from moment of loginwill save some network back and forth, too ... user logs in or creates account with special mbtwidget url and then they receive an access_token
+    let CLIENT_ID = "55723231"
+    let CLIENT_SECRET = "2ZWK9sU2hMcQ3smbgaSqywNkcvGKbb53"
     
+    // this will open other browser window
+    // the callback will contain the token directly instead of the normal oauth2 flow
+    // this is handled by .onOpenUrl
     func authenticateUser() {
-        // see if user is already authenticated ... if so then
+        // Example: simulate a login flow that issues tokens directly
+        let loginURL = "https://mybiketraffic.com/clients/login?client_id=\(CLIENT_ID)"
+        guard let url = URL(string: loginURL) else { return }
+        UIApplication.shared.open(url)
     }
-
+    
     func syncDirectoryListing() {
         refreshAccessToken() { success in 
             guard let token = self.getAccessToken() else {

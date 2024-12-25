@@ -7,13 +7,13 @@ class DeviceViewModel: NSObject, ObservableObject, IQDeviceEventDelegate, IQAppM
     @Published var devices: [IQDevice] = []
     var app: IQApp?
     var arModel: ARViewModel?
-    
+
     func parseDevices(from url: URL) {
         if let parsedDevices = ConnectIQ.sharedInstance()?.parseDeviceSelectionResponse(from: url) as? [IQDevice] {
             self.devices = parsedDevices
             registerForDeviceEvents()
         }
-        var res : IQSendMessageResult
+//        var res : IQSendMessageResult  // this is only here to quickly navigate to the relevant code in the ConnectIQ swift library ... uncomment and then command+click it!
     }
     
     private func registerForDeviceEvents() {

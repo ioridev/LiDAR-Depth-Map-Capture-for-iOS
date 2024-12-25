@@ -52,7 +52,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.stopUpdatingLocation()
     }
 
-    func saveData(textFileURL: URL, timestamp: String) {
+    func saveData(textFileURL: URL, timestamp: Double, cameraIntrinsics: Matrix3x3) {
 
         // Get accelerometer data
         let x = motionManager.accelerometerData?.acceleration.x ?? 0.0
@@ -64,19 +64,30 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let lng = currentLocation?.coordinate.longitude ?? 0.0
 
         // Save metadata to text file
-        let textContent = """
-        Accelerometer:
-        X: \(x)
-        Y: \(y)
-        Z: \(z)
-        Location:
-        Latitude: \(lat)
-        Longitude: \(lng)
-        Timestamp: \(timestamp)
-        """
-        print("saving to \(textFileURL)")
-        try? textContent.write(to: textFileURL, atomically: true, encoding: .utf8)
+        struct Metadata: Codable {
+            let Accelerometer: AccelerometerData
+            let Location: LocationData
+            let Timestamp: Double
+            let CameraIntrinsics: Matrix3x3
+        }
 
+        // Then, in your code:
+        let data = Metadata(
+            Accelerometer: AccelerometerData(X: x, Y: y, Z: z),
+            Location: LocationData(Latitude: lat, Longitude: lng),
+            Timestamp: timestamp,
+            CameraIntrinsics: cameraIntrinsics
+        )
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let encoded = try encoder.encode(data)            
+            // Write to file
+            try encoded.write(to: textFileURL)
+
+        } catch {
+            print("Error encoding or writing JSON:", error)
+        }
         print("Metadata saved at: \(textFileURL.path)")
     }
 
