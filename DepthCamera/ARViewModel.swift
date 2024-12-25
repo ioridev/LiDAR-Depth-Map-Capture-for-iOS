@@ -299,7 +299,6 @@ func saveImage(image: CVPixelBuffer, url: URL) {
     }
 }
 
-
 struct VideoModeButton: View {
     let deviceViewModel: DeviceViewModel
     @ObservedObject var model: ARViewModel
@@ -318,21 +317,27 @@ struct VideoModeButton: View {
                 if model.isRecordingVideo {
                     Rectangle()
                         .foregroundColor(Color.white)
-                        .frame(width: 175, height: 175)
+                        .frame(width: 275, height: 275)
                     Rectangle()
                         .foregroundColor(Color.red)
-                        .frame(width: 150, height: 150)
+                        .frame(width: 240, height: 240)
                 } else {
                     Circle()
                         .foregroundColor(Color.white)
-                        .frame(width: 150, height: 150)
+                        .frame(width: 250, height: 250)
                 }
             }
         }
     }
 }
-
-
+struct MBTSyncButton: View {
+    var model : MBTViewModel = MBTViewModel()
+    var body : some View {
+        Button(action:{model.syncDirectoryListing()}) {
+            Image("m3")
+        }
+    }
+}
 struct CaptureButtonPanelView: View {
     let deviceViewModel: DeviceViewModel
     @ObservedObject var model: ARViewModel
@@ -342,17 +347,11 @@ struct CaptureButtonPanelView: View {
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             HStack {
-                ZStack(alignment: .topTrailing) {
-                    ThumbnailView(model: model)
-                        .frame(width: width / 3)
-                        .padding(.horizontal)
-                }
-                Spacer()
-            }
-            HStack {
+                ThumbnailView(model: model)
                 Spacer()
                 VideoModeButton(deviceViewModel: deviceViewModel, model: model)
                 Spacer()
+                MBTSyncButton()
             }
         }
     }
