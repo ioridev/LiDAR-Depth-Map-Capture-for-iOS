@@ -30,5 +30,9 @@
 	<string>This app needs access to motion data to record detailed orientation info with your photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs access to your location to record metadata for captured photos.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>This app needs Bluetooth to connect to the Varia Radar.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>This app needs Bluetooth to connect to the Varia Radar.</string>
 </dict>
 </plist>

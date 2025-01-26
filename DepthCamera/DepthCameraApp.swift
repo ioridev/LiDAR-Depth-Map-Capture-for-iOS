@@ -11,7 +11,7 @@ import ConnectIQ
 @main
 struct DepthCameraApp: App {
     @StateObject private var deviceViewModel = DeviceViewModel() // this needs to be here to parse the list of devices availabe from the user's garmin connect account
-    @StateObject private var mbtViewModel = MBTViewModel() // this needs to be here to parse the list of devices availabe from the user's garmin connect account
+    @StateObject private var mbtViewModel = MBTViewModel() // this needs to be here to parse the list of devices availabe from the user's garmin connect asetccount
 
     var body: some Scene {
         WindowGroup {

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		71C3B3AD7A98BA3561007192 /* Pods_DepthCameraTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */; };
 		89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6171D2B14740A00280111 /* DepthCameraApp.swift */; };
 		89B617222B14740B00280111 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89B617212B14740B00280111 /* Assets.xcassets */; };
 		89B617262B14740B00280111 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89B617252B14740B00280111 /* Preview Assets.xcassets */; };
@@ -16,8 +15,6 @@
 		89B6173C2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */; };
 		8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */ = {isa = PBXBuildFile; productRef = 8B0C60F32CF8AE99004769D9 /* ConnectIQ */; };
 		8B6D48462CFDEBF4000A4C4A /* SensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6D48452CFDE988000A4C4A /* SensorManager.swift */; };
-		AF6D6D435FA0400B15234CB6 /* Pods_DepthCamera_DepthCameraUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */; };
-		DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,7 +36,6 @@
 
 /* Begin PBXFileReference section */
 		5AD708927E8DD9D65325735B /* Pods-DepthCameraTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.debug.xcconfig"; sourceTree = "<group>"; };
-		5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCameraTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		71F5030F13FAB4BF6261DA2C /* Pods-DepthCamera-DepthCameraUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		89B6171A2B14740A00280111 /* DepthCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DepthCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		89B6171D2B14740A00280111 /* DepthCameraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraApp.swift; sourceTree = "<group>"; };
@@ -54,11 +50,9 @@
 		89B6174A2B14802900280111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		8B6D48452CFDE988000A4C4A /* SensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorManager.swift; sourceTree = "<group>"; };
-		8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCamera_DepthCameraUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
 		CE2ED132977D0482CF937CA8 /* Pods-DepthCamera.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera/Pods-DepthCamera.release.xcconfig"; sourceTree = "<group>"; };
-		E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCamera.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEB00714AEB0453F28A4DA1F /* Pods-DepthCamera.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera.debug.xcconfig"; path = "Target Support Files/Pods-DepthCamera/Pods-DepthCamera.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,7 +66,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */,
 				8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -81,7 +74,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				71C3B3AD7A98BA3561007192 /* Pods_DepthCameraTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,7 +81,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AF6D6D435FA0400B15234CB6 /* Pods_DepthCamera_DepthCameraUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,9 +166,6 @@
 		C0163DDF423E92E8B9F2B809 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */,
-				8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */,
-				5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

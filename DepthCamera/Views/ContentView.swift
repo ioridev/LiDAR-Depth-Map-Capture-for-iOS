@@ -11,7 +11,8 @@ struct ContentView : View {
     var deviceViewModel: DeviceViewModel
     var mbtViewModel: MBTViewModel
     @StateObject private var arViewModel = ARViewModel()
-    
+    @StateObject private var radarViewModel = RadarViewModel()
+
     @State private var isVideoMode = false
     let previewCornerRadius: CGFloat = 15.0
     
@@ -31,6 +32,17 @@ struct ContentView : View {
                             .frame(width: width, height: height)
                     }
                     Spacer()
+                    
+                    // Display the radar data here and whether is is connected
+                    Text(radarViewModel.isBluetoothAvailable ? "Bluetooth Available" : "Bluetooth Unavailable")                                 .foregroundColor(radarViewModel.isBluetoothAvailable ? .green : .red)
+
+                    Text(radarViewModel.isRadarConnected ? "Radar Connected" : "Radar Disconnected")
+                        .foregroundColor(radarViewModel.isRadarConnected ? .green : .red)
+
+                    Text("Radar Data: \(radarViewModel.radarData)")
+                        .font(.headline)
+                        .padding()
+                    
                     CaptureButtonPanelView(deviceViewModel: deviceViewModel,  mbtViewModel: mbtViewModel, arViewModel: arViewModel, width: geometry.size.width)
                     
                 }
@@ -40,6 +52,8 @@ struct ContentView : View {
             // deviceViewModel needs to be able to tell the arViewModel to stop/start recording
             // when receiving messages from the ConnectIQ device
             deviceViewModel.setModel(arViewModel)
+            radarViewModel.arModel = arViewModel
+            radarViewModel.deviceModel = deviceViewModel
         }
         .environment(\.colorScheme, .dark)
     }
