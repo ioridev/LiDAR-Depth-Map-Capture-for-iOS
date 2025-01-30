@@ -1,18 +1,20 @@
-import SwiftUI
 import ARKit
-import RealityKit
-
+import CoreGraphics
 import ImageIO
 import MobileCoreServices
-import CoreGraphics
+import RealityKit
+import SwiftUI
 import tiff_ios
 
-struct ContentView : View {
+struct ContentView: View {
     var deviceViewModel: DeviceViewModel
     var mbtViewModel: MBTViewModel
     @StateObject private var arViewModel = ARViewModel()
     @StateObject private var radarViewModel = RadarViewModel()
-
+    
+    @State private var buttonText: String = "Reconnect"
+    @State private var isLongPressing: Bool = false
+    
     @State private var isVideoMode = false
     let previewCornerRadius: CGFloat = 15.0
     
@@ -24,36 +26,103 @@ struct ContentView : View {
                 Color.black.edgesIgnoringSafeArea(.all)
                 VStack {
                     
-                    let width = geometry.size.width/9 // trying to save battery ... don't even really need to see the preview ... hopefully making it much smaller will help
-                    let height = width * 4 / 3 // 4:3 aspect ratio
-                    if (arViewModel.isRecordingVideo) {
+                    let width = geometry.size.width / 9  // trying to save battery ... don't even really need to see the preview ... hopefully making it much smaller will help
+                    let height = width * 4 / 3  // 4:3 aspect ratio
+                    if arViewModel.isRecordingVideo {
                         ARViewContainer(arViewModel: arViewModel)
-                            .clipShape(RoundedRectangle(cornerRadius: previewCornerRadius))
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: previewCornerRadius)
+                            )
                             .frame(width: width, height: height)
                     }
                     Spacer()
                     
-                    // Display the radar data here and whether is is connected
-                    Text(radarViewModel.isBluetoothAvailable ? "Bluetooth Available" : "Bluetooth Unavailable")                                 .foregroundColor(radarViewModel.isBluetoothAvailable ? .green : .red)
-
-                    Text(radarViewModel.isRadarConnected ? "Radar Connected" : "Radar Disconnected")
-                        .foregroundColor(radarViewModel.isRadarConnected ? .green : .red)
-
-                    Text("Radar Data: \(radarViewModel.radarData)")
-                        .font(.headline)
-                        .padding()
+                    ScrollView {
+                        LazyVStack(alignment: .leading, spacing: 5) { // Reduced spacing between rows
+                            ForEach(radarViewModel.dataRecords, id: \.id) { record in
+                                HStack {
+                                    // Raw Data Column (Smaller)
+                                    Text(record.raw)
+                                        .frame(width: 100, alignment: .leading) // Fixed smaller width
+                                        .padding(.horizontal, 5)
+                                    
+                                    Divider()
+                                    
+                                    // Interpreted Data Column (More Space)
+                                    Text(record.interpreted)
+                                        .frame(maxWidth: .infinity, alignment: .leading) // Take remaining space
+                                        .padding(.horizontal, 5)
+                                }
+                                .font(.system(size: 12, weight: .regular, design: .monospaced)) // Reduced font size
+                                .frame(height: 13) // Reduced row height
+                            }
+                        }
+                    }
+                    .frame(height: 200) // Reduced height of the ScrollView
+                    .border(Color.gray, width: 1)
+                    .padding(.horizontal)
                     
-                    CaptureButtonPanelView(deviceViewModel: deviceViewModel,  mbtViewModel: mbtViewModel, arViewModel: arViewModel, width: geometry.size.width)
+                    HStack {
+                        VStack {
+                            // Display the radar data here and whether is is connected
+                            Text(
+                                radarViewModel.isBluetoothAvailable
+                                ? "Bluetooth Available" : "Bluetooth Unavailable"
+                            ).foregroundColor(
+                                radarViewModel.isBluetoothAvailable ? .green : .red)
+                            
+                            Text(
+                                radarViewModel.isRadarConnected
+                                ? "Radar Connected" : "Radar Disconnected"
+                            )
+                            .foregroundColor(
+                                radarViewModel.isRadarConnected ? .green : .red)
+                        }
+                        Button(action: {
+                            if !isLongPressing {
+                                radarViewModel.reconnectToSavedPeripheral()
+                            }
+                        }) {
+                            Text(buttonText)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(isLongPressing ? Color.orange : Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                        }
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 1.0)
+                                .onChanged { _ in
+                                    isLongPressing = true
+                                    buttonText = "Scanning for Devices..." // Change text during long press
+                                }
+                                .onEnded { _ in
+                                    isLongPressing = false
+                                    buttonText = "Reconnect" // Reset text after long press
+                                    radarViewModel.scanForDevices() // Trigger scanning
+                                }
+                        )
+                    }                        .disabled(radarViewModel.isScanning)
+                    
+                    
+                    CaptureButtonPanelView(
+                        deviceViewModel: deviceViewModel,
+                        mbtViewModel: mbtViewModel, arViewModel: arViewModel,
+                        width: geometry.size.width)
                     
                 }
             }
         }
-        .onAppear() {
+        .onAppear {
             // deviceViewModel needs to be able to tell the arViewModel to stop/start recording
+            // radarViewModel needs to be able to tell the arViewModel to stop/start recording
+            // deviceViewModel also needs to know if the radar is connected ... b/c if it is, then it does not to respond to incoming messages from the Garmin
             // when receiving messages from the ConnectIQ device
-            deviceViewModel.setModel(arViewModel)
+            deviceViewModel.arModel = arViewModel
             radarViewModel.arModel = arViewModel
             radarViewModel.deviceModel = deviceViewModel
+            deviceViewModel.radarModel = radarViewModel
         }
         .environment(\.colorScheme, .dark)
     }
@@ -63,7 +132,8 @@ struct ARViewContainer: UIViewRepresentable {
     @ObservedObject var arViewModel: ARViewModel
     
     func find4by3VideoFormat() -> ARConfiguration.VideoFormat? {
-        let availableFormats = ARWorldTrackingConfiguration.supportedVideoFormats
+        let availableFormats = ARWorldTrackingConfiguration
+            .supportedVideoFormats
         for format in availableFormats {
             let resolution = format.imageResolution
             if resolution.width / 4 == resolution.height / 3 {
@@ -74,14 +144,14 @@ struct ARViewContainer: UIViewRepresentable {
         return nil
     }
     
-    
-    
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         
         let configuration = ARWorldTrackingConfiguration()
         
-        if ARWorldTrackingConfiguration.supportsSceneReconstruction(.meshWithClassification) {
+        if ARWorldTrackingConfiguration.supportsSceneReconstruction(
+            .meshWithClassification)
+        {
             configuration.sceneReconstruction = .meshWithClassification
         }
         
@@ -94,7 +164,6 @@ struct ARViewContainer: UIViewRepresentable {
         } else {
             print("No 4:3 video format is available")
         }
-        
         
         arView.session.delegate = arViewModel
         arView.session.run(configuration)
@@ -148,7 +217,8 @@ struct CaptureButtonPanelView: View {
             HStack {
                 ThumbnailView(model: arViewModel)
                 Spacer()
-                VideoModeButton(deviceViewModel: deviceViewModel, model: arViewModel)
+                VideoModeButton(
+                    deviceViewModel: deviceViewModel, model: arViewModel)
                 Spacer()
                 MBTView(model: mbtViewModel)
             }
@@ -159,14 +229,17 @@ struct CaptureButtonPanelView: View {
 struct DocumentPicker: UIViewControllerRepresentable {
     let directoryURL: URL
     
-    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [.folder], asCopy: false)
+    func makeUIViewController(context: Context)
+    -> UIDocumentPickerViewController
+    {
+        let picker = UIDocumentPickerViewController(
+            forOpeningContentTypes: [.folder], asCopy: false)
         picker.directoryURL = directoryURL
         picker.modalPresentationStyle = .fullScreen
         return picker
     }
     
-    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
+    func updateUIViewController(
+        _ uiViewController: UIDocumentPickerViewController, context: Context
+    ) {}
 }
-
-

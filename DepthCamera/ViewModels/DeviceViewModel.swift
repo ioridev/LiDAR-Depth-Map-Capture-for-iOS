@@ -7,6 +7,7 @@ class DeviceViewModel: NSObject, ObservableObject, IQDeviceEventDelegate, IQAppM
     @Published var devices: [IQDevice] = []
     var app: IQApp?
     var arModel: ARViewModel?
+    var radarModel: RadarViewModel?
 
     func parseDevices(from url: URL) {
         if let parsedDevices = ConnectIQ.sharedInstance()?.parseDeviceSelectionResponse(from: url) as? [IQDevice] {
@@ -28,10 +29,6 @@ class DeviceViewModel: NSObject, ObservableObject, IQDeviceEventDelegate, IQAppM
         }
     }
     
-    func setModel(_ model: ARViewModel) {
-        self.arModel = model
-    }
-    
     func deviceStatusChanged(_ device: IQDevice!, status: IQDeviceStatus) {
         // Handle the events from the device here
         cdebug("Received status changed from device: \(device) - \(status)")
@@ -44,16 +41,17 @@ class DeviceViewModel: NSObject, ObservableObject, IQDeviceEventDelegate, IQAppM
         cdebug("Received message from device: \(message) - \(app)")
         if let arModel = arModel, let message = message as? String {
             cdebug(message)
-            if message == "start" {
+            if message == "start" && !((radarModel?.isRadarConnected ?? false) as Bool)  {
                 cdebug("starting recording")
                 arModel.startVideoRecording()
                 sendMessage(arModel.isRecordingVideo ? "started" : "stopped")
-            } else if message == "stop" {
+            } else if message == "stop" && !((radarModel?.isRadarConnected ?? false) as Bool) {
                 cdebug("stopping recording")
                 arModel.stopVideoRecording()
                 sendMessage(arModel.isRecordingVideo ? "started" : "stopped")
             } else if message == "status" {
-                sendMessage(arModel.isRecordingVideo ? "started" : "stopped")
+                // send started if recording, send stopped if connected but not recording, otherwise send stopped
+                sendMessage(arModel.isRecordingVideo ? "started" : ((radarModel?.isRadarConnected ?? false) ? "stopped" :"disconnected"))
             }
         }
     }
