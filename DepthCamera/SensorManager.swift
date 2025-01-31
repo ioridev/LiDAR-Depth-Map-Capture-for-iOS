@@ -52,7 +52,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.stopUpdatingLocation()
     }
 
-    func saveData(textFileURL: URL, timestamp: Double, cameraIntrinsics: Matrix3x3) {
+    func saveData(textFileURL: URL, timestamp: Double, cameraIntrinsics: Matrix3x3) -> Metadata {
 
         // Get accelerometer data
         let x = motionManager.accelerometerData?.acceleration.x ?? 0.0
@@ -64,12 +64,6 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let lng = currentLocation?.coordinate.longitude ?? 0.0
 
         // Save metadata to text file
-        struct Metadata: Codable {
-            let Accelerometer: AccelerometerData
-            let Location: LocationData
-            let Timestamp: Double
-            let CameraIntrinsics: Matrix3x3
-        }
 
         // Then, in your code:
         let data = Metadata(
@@ -89,6 +83,7 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             print("Error encoding or writing JSON:", error)
         }
         print("Metadata saved at: \(textFileURL.path)")
+        return data
     }
 
     // CLLocationManagerDelegate - Update location

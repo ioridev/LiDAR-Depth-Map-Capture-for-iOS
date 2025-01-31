@@ -5,6 +5,20 @@ import os
 
 fileprivate let targetSize = CGSize(width: 448, height: 448)
 
+extension CIImage {
+    func scaled(to size: CGSize, context: CIContext) -> CIImage? {
+        let scaleX = size.width / self.extent.width
+        let scaleY = size.height / self.extent.height
+        let scale = min(scaleX, scaleY) // Preserve aspect ratio
+        
+        let filter = CIFilter.lanczosScaleTransform()
+        filter.inputImage = self
+        filter.scale = Float(scale)
+        
+        return filter.outputImage
+    }
+}
+
 final class DataModel: ObservableObject {
     let context = CIContext()
 
@@ -60,48 +74,72 @@ final class DataModel: ObservableObject {
     enum InferenceError: Error {
         case postProcessing
     }
-
-    func performInference(_ image: CIImage, depthURL: URL, metadata:Metadata?) -> (Image?, [LabelAttributes])? {
+    
+//    func loadDepth(depthURL:URL) {
+//        // load the depth data
+//        let depthData = DepthData()
+//        depthData.loadDepthTIFF(url: depthURL, targetSize: targetSize)
+//
+//        guard let semanticImage = try? postProcessor.semanticImage(semanticPredictions: result.semanticPredictionsShapedArray, depthMap: depthData.depthData, minDepth:depthData.depthData.min() ?? 0.0, maxDepth:depthData.depthData.max() ?? 0.0, origImage: inputImage) else {
+//            print("semantic image post processing failed")
+//            return nil
+//        }
+//        
+//        guard let labelAttributes = try? postProcessor.generateLabelAttributes(semanticPredictions: result.semanticPredictionsShapedArray, depthData: depthData, metadata: metadata) else {
+//            print("could not get labels")
+//        }
+//        // Print the mapping
+//        // extract the closests points
+//        var closestPoints : [ClosestPoint] = []
+//        var labels : [String] = []
+//        for label in labelAttributes {
+//            closestPoints.append(label.closestpt)
+//            labels.append(label.name)
+//        }
+//
+//        let annotatedImage = try? postProcessor.annotateImage(image: semanticImage, labels: labelAttributes, originalSize: originalSize)
+////        let outputImage = semanticImage.resized(to: originalSize).image
+//        return (annotatedImage!.image, labelAttributes)
+//    }
+    
+    func rotateImage180Degrees(_ image: CIImage) -> CIImage? {
+        let transform = CGAffineTransform(rotationAngle: .pi) // 180 degrees in radians
+        return image.transformed(by: transform)
+    }
+    
+    func performInference(_ image: CIImage, depthURL: URL, metadata:Metadata?) -> [LabelAttributes]? {
         guard let model, let postProcessor = postProcessor else {
             return nil
         }
-
-        // load the depth data
-        let depthData = DepthData()
-        depthData.loadDepthTIFF(url: depthURL, targetSize: targetSize)
 
         let context = CIContext()
         let imagesize = image.extent
         let w = imagesize.width
         let h = imagesize.height
         let originalSize = CGSize(width: w, height:h)
-        let inputImage = image.resized(to: targetSize)
+
+        guard let inputImage = image.scaled(to: targetSize, context: context) else {
+            print("image scaling failed")
+            return nil
+        }
+
+        guard let ciImage = rotateImage180Degrees(inputImage) else { return nil }
+        
         context.render(inputImage, to: inputPixelBuffer)
         guard let result = try? model.prediction(image: inputPixelBuffer) else {
                 print("model prediction failed")
                 return nil;
             }
-        
-        guard let semanticImage = try? postProcessor.semanticImage(semanticPredictions: result.semanticPredictionsShapedArray, depthMap: depthData.depthData, minDepth:depthData.depthData.min() ?? 0.0, maxDepth:depthData.depthData.max() ?? 0.0, origImage: inputImage) else {
-            print("semantic image post processing failed")
-            return nil
-        }
-        
+
+        let depthData = DepthData()
+        depthData.loadDepthTIFF(url: depthURL, targetSize: targetSize)
+
         guard let labelAttributes = try? postProcessor.generateLabelAttributes(semanticPredictions: result.semanticPredictionsShapedArray, depthData: depthData, metadata: metadata) else {
             print("could not get labels")
         }
-        // Print the mapping
-        // extract the closests points
-        var closestPoints : [ClosestPoint] = []
-        var labels : [String] = []
-        for label in labelAttributes {
-            closestPoints.append(label.closestpt)
-            labels.append(label.name)
-        }
-
-        let annotatedImage = try? postProcessor.annotateImage(image: semanticImage, labels: labelAttributes, originalSize: originalSize)
-//        let outputImage = semanticImage.resized(to: originalSize).image
-        return (annotatedImage!.image, labelAttributes)
+        
+        return nil
+        
     }
     
 

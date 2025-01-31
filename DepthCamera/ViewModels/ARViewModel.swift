@@ -50,6 +50,14 @@ struct Matrix3x3: Codable {
             SIMD3<Float>(r2[0], r2[1], r2[2])
         ])
     }
+    
+    func extractARKitIntrinsics() -> (fx: Float, fy: Float, cx: Float, cy: Float) {
+        let fx = rows[0][0]
+        let fy = rows[1][1]
+        let cx = rows[2][0]
+        let cy = rows[2][1]
+        return (fx, fy, cx, cy)
+    }
 }
 
 class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
@@ -67,6 +75,10 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             print("lastCapture was set.")
         }
     }
+    
+    private var model = DataModel() // ai model
+    @Published var lastSemanticImage: UIImage?
+    
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         latestDepthMap = frame.sceneDepth?.depthMap
@@ -107,9 +119,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         DispatchQueue.main.async {
             self.lastCapture = uiImage
         }
-     
-        
-        
+             
         print("Depth map saved to \(depthFileURL)")
         print("Image saved to \(imageFileURL)")
     }
@@ -127,7 +137,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         let depthFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_depth.tiff")
         let imageFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_image.jpg")
         let metaFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_meta.txt")
-        sensorManager.saveData(textFileURL: metaFileURL, timestamp: frameTimestamp, cameraIntrinsics: Matrix3x3(latestFrame?.camera.intrinsics))
+        let metadata = sensorManager.saveData(textFileURL: metaFileURL, timestamp: frameTimestamp, cameraIntrinsics: Matrix3x3(latestFrame?.camera.intrinsics))
     
         // Save the depth map and image
         writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
@@ -138,7 +148,16 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         DispatchQueue.main.async {
             self.lastCapture = uiImage
         }
-
+        
+        if lastSemanticImage == nil {
+            let context = CIContext()
+            let ciImage = CIImage(cvPixelBuffer: image)
+            if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+                lastSemanticImage = UIImage(cgImage: cgImage)
+                let labelattributes = model.performInference(ciImage, depthURL: depthFileURL, metadata: metadata)
+            }
+        }
+        
         print("Saved depth map and image at \(frameTimestamp)")
     }
     
@@ -262,4 +281,34 @@ func saveImage(image: CVPixelBuffer, url: URL) {
     }
 }
 
+import CoreML
+import CoreImage
+import CoreImage.CIFilterBuiltins
+import CoreGraphics
+import simd
+
+enum PostProcessorError : Error {
+    case missingModelMetadata
+    case colorConversionError
+}
+
+struct ClosestPoint {
+    let dist:Float
+    let point:CGPoint
+}
+
+struct LabelAttributes : Identifiable {
+    let id = UUID()          // Unique identifier
+    let classId: Int
+    let name: String
+    let color: UIColor
+    let closestpt: ClosestPoint
+}
+
+struct Metadata: Codable {
+    let Accelerometer: AccelerometerData
+    let Location: LocationData
+    let Timestamp: Double
+    let CameraIntrinsics: Matrix3x3
+}
 

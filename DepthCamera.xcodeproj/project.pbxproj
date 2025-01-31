@@ -14,6 +14,8 @@
 		89B6173A2B14740B00280111 /* DepthCameraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B617392B14740B00280111 /* DepthCameraUITests.swift */; };
 		89B6173C2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */; };
 		8B0C60F42CF8AE99004769D9 /* ConnectIQ in Frameworks */ = {isa = PBXBuildFile; productRef = 8B0C60F32CF8AE99004769D9 /* ConnectIQ */; };
+		8B462B852D4BCF6500431597 /* DETRResnet50SemanticSegmentationF16.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 8B462B842D4BCF6500431597 /* DETRResnet50SemanticSegmentationF16.mlpackage */; };
+		8B462B912D4C2F1900431597 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B462B902D4C2F1900431597 /* DataModel.swift */; };
 		8B6D48462CFDEBF4000A4C4A /* SensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6D48452CFDE988000A4C4A /* SensorManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,6 +51,8 @@
 		89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DepthCameraUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		89B6174A2B14802900280111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
+		8B462B842D4BCF6500431597 /* DETRResnet50SemanticSegmentationF16.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = DETRResnet50SemanticSegmentationF16.mlpackage; sourceTree = "<group>"; };
+		8B462B902D4C2F1900431597 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
 		8B6D48452CFDE988000A4C4A /* SensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorManager.swift; sourceTree = "<group>"; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -57,6 +61,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		8B462B862D4C2BCA00431597 /* Common */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Common; sourceTree = "<group>"; };
 		8B6D48592D05FFF4000A4C4A /* Views */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Views; sourceTree = "<group>"; };
 		8B6D485A2D05FFFB000A4C4A /* ViewModels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ViewModels; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -112,10 +117,13 @@
 		89B6171C2B14740A00280111 /* DepthCamera */ = {
 			isa = PBXGroup;
 			children = (
+				8B462B862D4C2BCA00431597 /* Common */,
 				8B6D485A2D05FFFB000A4C4A /* ViewModels */,
 				8B6D48592D05FFF4000A4C4A /* Views */,
 				89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */,
 				89B6174A2B14802900280111 /* Info.plist */,
+				8B462B902D4C2F1900431597 /* DataModel.swift */,
+				8B462B842D4BCF6500431597 /* DETRResnet50SemanticSegmentationF16.mlpackage */,
 				89B6171D2B14740A00280111 /* DepthCameraApp.swift */,
 				89B617212B14740B00280111 /* Assets.xcassets */,
 				89B617232B14740B00280111 /* DepthCamera.entitlements */,
@@ -188,6 +196,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				8B462B862D4C2BCA00431597 /* Common */,
 				8B6D48592D05FFF4000A4C4A /* Views */,
 				8B6D485A2D05FFFB000A4C4A /* ViewModels */,
 			);
@@ -416,6 +425,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */,
+				8B462B912D4C2F1900431597 /* DataModel.swift in Sources */,
+				8B462B852D4BCF6500431597 /* DETRResnet50SemanticSegmentationF16.mlpackage in Sources */,
 				8B6D48462CFDEBF4000A4C4A /* SensorManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -600,7 +611,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -659,7 +670,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
