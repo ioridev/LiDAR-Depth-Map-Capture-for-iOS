@@ -1,0 +1,18 @@
+{
+  "Inputs" : {
+    "image" : {
+      "MLFeatureShortDescription" : "Input image to be segmented."
+    }
+  },
+  "Outputs" : {
+    "semanticPredictions" : {
+      "MLFeatureShortDescription" : "Array of integers of the same size as the input image, where each value represents the class of the corresponding pixel."
+    }
+  },
+  "TrainingInputs" : {
+
+  },
+  "States" : {
+
+  }
+}
