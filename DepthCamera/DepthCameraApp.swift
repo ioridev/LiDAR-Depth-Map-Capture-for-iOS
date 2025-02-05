@@ -18,7 +18,7 @@ struct DepthCameraApp: App {
             ContentView(deviceViewModel: deviceViewModel, mbtViewModel: mbtViewModel).onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true // Prevent screen locking
                 initializeGarminConnectIQ()
-                UIScreen.main.brightness = CGFloat(0.01)
+                UIScreen.main.brightness = CGFloat(0.1)
             }
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false // Re-enable screen locking

@@ -67,12 +67,13 @@ class SemanticMapToImage {
 
         let (width, height) = (semanticMap.shape[0], semanticMap.shape[1])
         let flippedImage = origImage.transformed(by: CGAffineTransform.flipVertical(height: CGFloat(height)))
-        guard let outputTexture = makeTexture(from: flippedImage, width: width, height: height, pixelFormat: .bgra8Unorm) else { return nil }
+        let flippedImage2 = flippedImage.transformed(by: CGAffineTransform.flipVertical(height: CGFloat(height)))
+        guard let outputTexture = makeTexture(from: flippedImage2, width: width, height: height, pixelFormat: .bgra8Unorm) else { return nil }
 
         let (semanticTexture, depthTexture) = sourceTexture(semanticMap, depthMap)
-        commandEncoder.setTexture(semanticTexture, index: 0)
-        commandEncoder.setTexture(depthTexture, index: 1)
         commandEncoder.setTexture(outputTexture, index: 2)
+        commandEncoder.setTexture(depthTexture, index: 1)
+        commandEncoder.setTexture(semanticTexture, index: 0)
 
         var classCount = numClasses
         var minDepth = minDepth
@@ -117,20 +118,22 @@ class SemanticMapToImage {
         }
 
         // Create a Core Image context with the Metal device
-        let ciContext = CIContext(mtlDevice: device)
-
+//        let ciContext = CIContext(mtlDevice: device)
+        let ciContext = CIContext()
+        let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent)
         // Define the bounds of the CIImage (to match the texture size)
         let bounds = CGRect(x: 0, y: 0, width: width, height: height)
-
+        
         // Render the CIImage into the Metal texture
-        ciContext.render(ciImage, to: outputTexture, commandBuffer: nil, bounds: bounds, colorSpace: CGColorSpaceCreateDeviceRGB())
-
+        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+        ciContext.render(ciImage, to: outputTexture, commandBuffer: nil, bounds: bounds, colorSpace: colorSpace)
         return outputTexture
     }
     
     func makeTexture_origint(width: Int, height: Int, pixelFormat: MTLPixelFormat = .r32Uint) -> MTLTexture? {
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
         textureDescriptor.usage = [.shaderRead, .shaderWrite]
+        textureDescriptor.storageMode = .shared // Ensure the CPU can access the texture
         return device.makeTexture(descriptor: textureDescriptor)
     }
     func makeTexture_origfloat(width: Int, height: Int, pixelFormat: MTLPixelFormat = .r32Float) -> MTLTexture? {

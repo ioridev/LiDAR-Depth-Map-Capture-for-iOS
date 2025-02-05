@@ -1,7 +1,10 @@
 import SwiftUI
 import ARKit
 import RealityKit
-
+import CoreML
+import CoreImage
+import CoreImage.CIFilterBuiltins
+import simd
 import ImageIO
 import MobileCoreServices
 import CoreGraphics
@@ -70,14 +73,10 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     private var videoTimer: Timer?
     private var videoStartTime: TimeInterval?
     private var videoDirectoryURL: URL?
-    @Published var lastCapture: UIImage? = nil {
-        didSet {
-            print("lastCapture was set.")
-        }
-    }
     
+    var deviceModel: DeviceViewModel?
     private var model = DataModel() // ai model
-    @Published var lastSemanticImage: UIImage?
+    @Published var lastSemanticImage: Image?
     
     
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
@@ -86,134 +85,276 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         latestFrame = frame
     }
     
-    func saveDepthMap() {
-        guard let depthMap = latestDepthMap, let image = latestImage, let frame = latestFrame else {
-            print("Depth map or image is not available.")
-            return
-        }
-        
-        let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyyMMdd"
-        let dateString = dateFormatter.string(from: Date())
-        let dateDirURL = documentsDir.appendingPathComponent(dateString)
-        
-        do {
-            try FileManager.default.createDirectory(at: dateDirURL, withIntermediateDirectories: true, attributes: nil)
-        } catch {
-            print("Failed to create directory: \(error)")
-            return
-        }
-        
-        let timestamp = Date().timeIntervalSince1970*1000
-        let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.tiff")
-        let imageFileURL = dateDirURL.appendingPathComponent("\(timestamp)_image.jpg")
-        let metaFileURL = dateDirURL.appendingPathComponent("\(timestamp)_meta.txt")
-        sensorManager.saveData(textFileURL: metaFileURL, timestamp: timestamp, cameraIntrinsics: Matrix3x3(latestFrame?.camera.intrinsics))
-        writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
-        saveImage(image: image, url: imageFileURL)
-
-        let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
-        
-        
-        DispatchQueue.main.async {
-            self.lastCapture = uiImage
-        }
-             
-        print("Depth map saved to \(depthFileURL)")
-        print("Image saved to \(imageFileURL)")
+    func rotateImage180Degrees(_ image: CIImage) -> CIImage? {
+        let transform = CGAffineTransform(rotationAngle: .pi) // 180 degrees in radians
+        return image.transformed(by: transform)
     }
     
+    func rotatedPixelBuffer(from ciImage: CIImage, rotationAngle radians: CGFloat) -> CVPixelBuffer? {
+        let context = CIContext()
+        
+        // Rotate the image properly
+        let rotatedImage = ciImage.transformed(by: CGAffineTransform(rotationAngle: radians))
+        
+        // Get the image dimensions after rotation
+        let width = Int(rotatedImage.extent.width)
+        let height = Int(rotatedImage.extent.height)
+        
+        // Create a new pixel buffer
+        var pixelBuffer: CVPixelBuffer?
+        let attrs = [
+            kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue!,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue!
+        ] as CFDictionary
+        CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attrs, &pixelBuffer)
+        
+        guard let buffer = pixelBuffer else { return nil }
+        
+        // Lock pixel buffer and render into it
+        CVPixelBufferLockBaseAddress(buffer, .init(rawValue: 0))
+        let baseAddress = CVPixelBufferGetBaseAddress(buffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
+        
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let cgContext = CGContext(data: baseAddress,
+                                        width: width,
+                                        height: height,
+                                        bitsPerComponent: 8,
+                                        bytesPerRow: bytesPerRow,
+                                        space: colorSpace,
+                                        bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) else {
+            CVPixelBufferUnlockBaseAddress(buffer, .init(rawValue: 0))
+            return nil
+        }
+        
+        // Render CIImage into the CGContext
+        let cgImage = context.createCGImage(rotatedImage, from: rotatedImage.extent)
+        if let cgImage = cgImage {
+            cgContext.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        }
+        
+        CVPixelBufferUnlockBaseAddress(buffer, .init(rawValue: 0))
+        
+        return buffer
+    }
+    
+    func manualInferenceOnly(image: UIImage) {
+        if let cgImage = image.cgImage {
+            let ciImage = rotateImage180Degrees(CIImage(cgImage: cgImage))!
+            
+//            let ciImage = CIImage(cgImage: cgImage)
+            if let (annnotatedImage, labelattributes) = model.performInferenceOnly(ciImage) {
+                if let semanticImage = annnotatedImage  {
+                    lastSemanticImage = semanticImage
+                }
+                print(labelattributes)
+            }
+        }
+    }
+    // manually invoke the process so we can see the heatmap on an image selected from the document directory
+    func manualInference(image: UIImage, imageURL: URL) {
+        
+        // extract the baseurl from the imageURL so we can retrieve the depthmap
+        let baseURL = imageURL.deletingLastPathComponent()
+        
+        // extract the frame timestamp from the filename
+        let frameTimestamp = imageURL.lastPathComponent.components(separatedBy: "_").first!
+        
+        // File URLs for depth map and image
+        let depthFileURL = baseURL.appendingPathComponent("\(Int(frameTimestamp)!)_depth.tiff")
+        let imageFileURL = baseURL.appendingPathComponent("\(Int(frameTimestamp)!)_image.jpg")
+        let metaFileURL = baseURL.appendingPathComponent("\(Int(frameTimestamp)!)_meta.txt")
+        
+        // now retrieve the depthmap
+//        let depthmap = loadDepthMapFromTIFF(url: depthFileURL)
+        
+        // now retrieve the matadata
+        let metadata = sensorManager.loadData(metadataFileURL: metaFileURL)
+        
+        //        guard let ciImage = rotateImage180Degrees(usdImage) else { return }
+        
+        if let cgImage = image.cgImage {
+            let ciImage = rotateImage180Degrees(CIImage(cgImage: cgImage))!
+//            let ciImage = CIImage(cgImage: cgImage)
+            if let (annnotatedImage, labelattributes) = model.performInference(ciImage, depthURL: depthFileURL, metadata: metadata) {
+                if let semanticImage = annnotatedImage  {
+                    lastSemanticImage = semanticImage
+                }
+                print(labelattributes)
+            }
+        }
+    }
+
     private func captureDepthImage() {
         guard let depthMap = latestDepthMap, let image = latestImage, let videoDirURL = videoDirectoryURL else {
             print("Depth map or image is not available.")
             return
         }
-
+        
         // Get current UNIX timestamp for the frame
         let frameTimestamp = Date().timeIntervalSince1970*1000
-
+        
         // File URLs for depth map and image
         let depthFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_depth.tiff")
         let imageFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_image.jpg")
         let metaFileURL = videoDirURL.appendingPathComponent("\(Int(frameTimestamp))_meta.txt")
         let metadata = sensorManager.saveData(textFileURL: metaFileURL, timestamp: frameTimestamp, cameraIntrinsics: Matrix3x3(latestFrame?.camera.intrinsics))
-    
-        // Save the depth map and image
+        
+        // Save the depth map and image ... this will return false if we run out of space ... could use this to gracefully STOP trying to record and/or display some sort of OutOfMemory warning
         writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
         saveImage(image: image, url: imageFileURL)
-
-        // Update the last captured image for thumbnail
-        let uiImage = UIImage(ciImage: CIImage(cvPixelBuffer: image))
-        DispatchQueue.main.async {
-            self.lastCapture = uiImage
-        }
         
-        if lastSemanticImage == nil {
-            let context = CIContext()
-            let ciImage = CIImage(cvPixelBuffer: image)
-            if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
-                lastSemanticImage = UIImage(cgImage: cgImage)
-                let labelattributes = model.performInference(ciImage, depthURL: depthFileURL, metadata: metadata)
+        let context = CIContext()
+        let usdImage = CIImage(cvPixelBuffer: image)
+        guard let ciImage = rotateImage180Degrees(usdImage) else { return }
+        
+        if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+            if let (annnotatedImage, labelattributes) = model.performInference(ciImage, depthURL: depthFileURL, metadata: metadata) {
+                if let semanticImage = annnotatedImage  {
+                    lastSemanticImage = semanticImage
+                    sendMessageIfAllowed(labelattributes) // semanticImage will be nil if there is no valid class within 5.0m
+                }
             }
         }
         
         print("Saved depth map and image at \(frameTimestamp)")
     }
     
+    var lastMessageTime: TimeInterval = 0
+    let cooldownInterval: TimeInterval = 2 // 2 seconds cooldown
+
+    func sendMessageIfAllowed(_ labelattributes: [LabelAttributes]?) {
+        let currentTime = Date().timeIntervalSince1970
+        if currentTime - lastMessageTime >= cooldownInterval {
+            deviceModel?.sendMessage(labelout(labelattributes))
+            lastMessageTime = currentTime
+        } else {
+            print("Skipping sendMessage - Cooldown active")
+        }
+    }
+    
+    func labelout(_ labelattributes: [LabelAttributes]?) -> String {
+        guard let labelattributes = labelattributes, !labelattributes.isEmpty else {
+            return ""
+        }
+        
+        return labelattributes.map { "\($0.name): \($0.closestpt.dist)" }.joined(separator: "\n")
+    }
+    
     func startVideoRecording() {
-            guard !isRecordingVideo else { return }
+        guard !isRecordingVideo else { return }
         
-            isRecordingVideo = true
-            UIScreen.main.brightness = CGFloat(0.01)
-
-            // tell the sensor manager to start collecting location and accelerometer data
-            sensorManager.start()
+        isRecordingVideo = true
+        UIScreen.main.brightness = CGFloat(0.01)
         
-            // Get UNIX timestamp for the start time
-            videoStartTime = Date().timeIntervalSince1970
-
-            // Create directory named with the UNIX start time
-            if let startTime = videoStartTime {
-                let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                videoDirectoryURL = documentsDir.appendingPathComponent("\(Int(startTime))")
-                do {
-                    try FileManager.default.createDirectory(at: videoDirectoryURL!, withIntermediateDirectories: true, attributes: nil)
-                    print("Created directory: \(videoDirectoryURL!.path)")
-                } catch {
-                    print("Failed to create directory: \(error)")
-                    isRecordingVideo = false
-                    return
-                }
-            }
-
-            // Start a timer to capture depth images every second
-            videoTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { _ in
-                self.captureDepthImage()
+        // tell the sensor manager to start collecting location and accelerometer data
+        sensorManager.start()
+        
+        // Get UNIX timestamp for the start time
+        videoStartTime = Date().timeIntervalSince1970
+        
+        // Create directory named with the UNIX start time
+        if let startTime = videoStartTime {
+            let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            videoDirectoryURL = documentsDir.appendingPathComponent("\(Int(startTime))")
+            do {
+                try FileManager.default.createDirectory(at: videoDirectoryURL!, withIntermediateDirectories: true, attributes: nil)
+                print("Created directory: \(videoDirectoryURL!.path)")
+            } catch {
+                print("Failed to create directory: \(error)")
+                isRecordingVideo = false
+                return
             }
         }
-
-        func stopVideoRecording() {
-            guard isRecordingVideo else { return }
-            isRecordingVideo = false
-            UIScreen.main.brightness = CGFloat(0.01)
-
-            sensorManager.stop() // no longer need to collect locatin/accel data
-
-            // Invalidate the timer
-            videoTimer?.invalidate()
-            videoTimer = nil
-
-            videoStartTime = nil
-            videoDirectoryURL = nil
-
-            print("Stopped video recording.")
+        
+        // Start a timer to capture depth images every second
+        videoTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { _ in
+            self.captureDepthImage()
         }
+    }
+    
+    func stopVideoRecording() {
+        guard isRecordingVideo else { return }
+        isRecordingVideo = false
+        UIScreen.main.brightness = CGFloat(0.01)
+        
+        sensorManager.stop() // no longer need to collect locatin/accel data
+        
+        // Invalidate the timer
+        videoTimer?.invalidate()
+        videoTimer = nil
+        
+        videoStartTime = nil
+        videoDirectoryURL = nil
+        
+        print("Stopped video recording.")
+    }
     
     
 }
 
-
+func loadDepthMapFromTIFF(url: URL) -> CVPixelBuffer? {
+    // Read the TIFF file using fromFile instead of withFile
+    guard let tiffImage = TIFFReader.readTiff(fromFile: url.path) else {
+        print("Failed to read TIFF file")
+        return nil
+    }
+    
+    // Get the first file directory (assuming a single-image TIFF)
+    guard let directory = tiffImage.fileDirectories().first else {
+        print("Failed to get TIFF directory")
+        return nil
+    }
+        
+    // Retrieve width and height from metadata
+    let width = Int(truncating: directory.imageWidth())
+    let height = Int(truncating: directory.imageHeight())
+    
+    // Read raster data safely
+    guard let rasters = directory.readRasters() else {
+        print("Failed to retrieve raster data")
+        return nil
+    }
+    
+    // Create a CVPixelBuffer to hold the depth data
+    var pixelBuffer: CVPixelBuffer?
+    let pixelBufferAttributes: [String: Any] = [
+        kCVPixelBufferWidthKey as String: width,
+        kCVPixelBufferHeightKey as String: height,
+        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_OneComponent32Float
+    ]
+    
+    let status = CVPixelBufferCreate(kCFAllocatorDefault,
+                                     width,
+                                     height,
+                                     kCVPixelFormatType_OneComponent32Float,
+                                     pixelBufferAttributes as CFDictionary,
+                                     &pixelBuffer)
+    
+    guard status == kCVReturnSuccess, let depthMap = pixelBuffer else {
+        print("Failed to create CVPixelBuffer")
+        return nil
+    }
+    
+    // Lock and populate the CVPixelBuffer
+    CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+    guard let baseAddress = CVPixelBufferGetBaseAddress(depthMap) else {
+        CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+        return nil
+    }
+    let bytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
+    
+    for y in 0..<height {
+        let pixelBytes = baseAddress.advanced(by: y * bytesPerRow)
+        let pixelBuffer = UnsafeMutableBufferPointer<Float>(start: pixelBytes.assumingMemoryBound(to: Float.self), count: width)
+        for x in 0..<width {
+            pixelBuffer[x] = rasters.firstPixelSampleAt(x:Int32(x), andY: Int32(y)).floatValue
+        }
+    }
+    
+    CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
+    return depthMap
+}
 
 
 func writeDepthMapToTIFFWithLibTIFF(depthMap: CVPixelBuffer, url: URL) -> Bool {
@@ -280,12 +421,6 @@ func saveImage(image: CVPixelBuffer, url: URL) {
         }
     }
 }
-
-import CoreML
-import CoreImage
-import CoreImage.CIFilterBuiltins
-import CoreGraphics
-import simd
 
 enum PostProcessorError : Error {
     case missingModelMetadata

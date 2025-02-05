@@ -92,6 +92,39 @@ class DETRPostProcessor {
         return (theta, adjacentSide)
     }
     
+    func rotateCGImage180Degrees(_ image: CGImage) -> CGImage? {
+        let width = image.width
+        let height = image.height
+        let bitsPerComponent = image.bitsPerComponent
+        let bytesPerRow = image.bytesPerRow
+        let colorSpace = image.colorSpace
+        let bitmapInfo = image.bitmapInfo
+
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: bitsPerComponent,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace ?? CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: bitmapInfo.rawValue
+        ) else {
+            print("Failed to create CGContext")
+            return nil
+        }
+
+        // Move origin to center, rotate 180 degrees, and move back
+        context.translateBy(x: CGFloat(width) / 2, y: CGFloat(height) / 2)
+        context.rotate(by: .pi) // 180 degrees
+        context.translateBy(x: -CGFloat(width) / 2, y: -CGFloat(height) / 2)
+
+        // Draw the image into the transformed context
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        return context.makeImage()
+    }
+
+    
     func annotateImage(
         image: CIImage,
         labels: [LabelAttributes],
@@ -121,6 +154,11 @@ class DETRPostProcessor {
         guard let cgImage = ciContext.createCGImage(image, from: image.extent) else {
             return nil
         }
+        
+        // Unneeded on Mac app, but needed by iOS b/c origin is bottom left on iOS instead of top
+        context.translateBy(x: 0, y: size.height)
+        context.scaleBy(x: 1.0, y: -1.0)
+        
         context.draw(cgImage, in: CGRect(origin: .zero, size: size))
         
         // Prepare for drawing the “X” (using pure Core Graphics).
@@ -149,6 +187,8 @@ class DETRPostProcessor {
             let uiContext = ctx.cgContext
             
             // Draw the original image first
+//            let rotcgImage = rotateCGImage180Degrees(context.makeImage()!)
+
             uiContext.draw(context.makeImage()!, in: CGRect(origin: .zero, size: size))
             
             // Loop over labels to draw text
@@ -164,8 +204,8 @@ class DETRPostProcessor {
                 let roundedDist = String(format: "%.3f", label.closestpt.dist)
                 
                 // Define text rectangles
-                let textRect = CGRect(x: point.x - crossSize, y: point.y + crossSize, width: 100, height: 20)
-                let textRect2 = CGRect(x: point.x + crossSize, y: point.y - crossSize, width: 100, height: 20)
+                let textRect = CGRect(x: point.x - crossSize, y: size.height-(point.y + crossSize), width: 100, height: 20)
+                let textRect2 = CGRect(x: point.x + crossSize, y: size.height-(point.y - crossSize), width: 100, height: 20)
                 
                 // Draw text
                 NSString(string: labelname).draw(in: textRect, withAttributes: textAttributes)
@@ -178,7 +218,7 @@ class DETRPostProcessor {
             return nil
         }
         
-        let finalCIImage = CIImage(cgImage: finalCGImage).cropped(to: CGRect(origin: .zero, size: size))
+        let finalCIImage = CIImage(cgImage: finalCGImage).cropped(to: CGRect(origin: .zero, size: originalSize))
         
         return finalCIImage
     }
@@ -214,6 +254,24 @@ class DETRPostProcessor {
     //        }
     //    }
 
+    // classID => count of number of pixels with that label
+    func extractUniqueLabels(from semanticPredictions: MLShapedArray<Int32>) -> [Int32:Int] {
+        var uniqueLabels : [Int32:Int] = [:]
+        // Iterate over the array using its shape
+        for i in 0..<semanticPredictions.shape[0] {
+            for j in 0..<semanticPredictions.shape[1] {
+                if let label = semanticPredictions[[i, j]].scalar {
+                    if uniqueLabels[label] == nil {
+                        uniqueLabels[label] = 1
+                    } else {
+                        uniqueLabels[label] = uniqueLabels[label]! + 1
+                    }
+                }
+            }
+        }
+        return uniqueLabels
+    }
+    
     func extractUniqueLabelDists(from semanticPredictions: MLShapedArray<Int32>, depthData: DepthData, metadata: Metadata?) -> [Int32:ClosestPoint] {
         var uniqueLabels : [Int32:ClosestPoint] = [:]
         let allowed_classes : [Int32] = [8, 7, 1, 19, 25, 22, 18, 21, 3, 6, 9, 2, 5, 23, 112, 4, 24]
@@ -222,7 +280,7 @@ class DETRPostProcessor {
         for i in 0..<semanticPredictions.shape[0] {
             for j in 0..<semanticPredictions.shape[1] {
                 let depthValue = depthData.depthAt(x: j, y: i) ?? .infinity // Using the first channel for depth value
-                if let label = semanticPredictions[[i, j]].scalar /*, allowed_classes.contains(label)*/ {
+                if let label = semanticPredictions[[i, j]].scalar, allowed_classes.contains(label) {
                     if uniqueLabels[label] == nil {
                         uniqueLabels[label] = ClosestPoint(dist:depthValue, point: CGPoint(x: Double(j), y: Double(semanticPredictions.shape[0]-i)))
                     } else if depthValue < uniqueLabels[label]!.dist {
@@ -245,6 +303,8 @@ class DETRPostProcessor {
             let y = uniqueLabels[label]?.point.y ?? 0.0
             let (cX, cY, fX, fY) = intrinsics!.extractARKitIntrinsics()
             let (_, correctdist) = angleAndAdjacent(Float(x), Float(y), Float(cX), Float(cY), Float(fX), Float(fY), uniqueLabels[label]?.dist ?? 0.0)
+           // let oldclosestpt = uniqueLabels[label]!
+           // uniqueLabels[label] = ClosestPoint(dist:correctdist, point:oldclosestpt.point)
         }
 
         
@@ -252,6 +312,18 @@ class DETRPostProcessor {
         return uniqueLabels
     }
     
+    func generateLabels(semanticPredictions: MLShapedArray<Int32>) -> [LabelAttributes] {
+        let uniqueLabelsArray = extractUniqueLabels(from: semanticPredictions)
+        var labelAttributes = [LabelAttributes]()
+        // Print the unique labels
+        print("Unique labels: \(uniqueLabelsArray)")
+        for (classID, pxcount) in uniqueLabelsArray {
+            let hue = Float(classID) / Float(numClasses)
+            let name = ids2Labels[Int(classID)] ?? ""
+            labelAttributes.append(LabelAttributes(classId: Int(classID), name: name, color: hueToRGB(hue), closestpt: ClosestPoint(dist: Float(pxcount), point: CGPoint(x: Double(0), y: Double(0)))))
+        }
+        return labelAttributes
+    }
     // Function to generate the label-to-color closest distance mapping
     // NOTE: there is currently no color coordination with closest distance on the labels ... that is chosen separately
     // This "all-in-one" funtion keeps us from having to determine unique labels multiple times or deal with passing around extra data structure

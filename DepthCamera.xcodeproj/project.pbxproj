@@ -54,6 +54,7 @@
 		8B462B842D4BCF6500431597 /* DETRResnet50SemanticSegmentationF16.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = DETRResnet50SemanticSegmentationF16.mlpackage; sourceTree = "<group>"; };
 		8B462B902D4C2F1900431597 /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
 		8B6D48452CFDE988000A4C4A /* SensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensorManager.swift; sourceTree = "<group>"; };
+		8BCE2E112D539A6C009ECB0F /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
 		CE2ED132977D0482CF937CA8 /* Pods-DepthCamera.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera/Pods-DepthCamera.release.xcconfig"; sourceTree = "<group>"; };
@@ -95,6 +96,7 @@
 		89B617112B14740A00280111 = {
 			isa = PBXGroup;
 			children = (
+				8BCE2E112D539A6C009ECB0F /* .gitignore */,
 				89B6171C2B14740A00280111 /* DepthCamera */,
 				89B6172E2B14740B00280111 /* DepthCameraTests */,
 				89B617382B14740B00280111 /* DepthCameraUITests */,

@@ -295,7 +295,7 @@ extension RadarViewModel: CBPeripheralDelegate {
             guard let arModel = arModel else { return }
 
             // slow approaching ... wait until 20m ... fast approaching ... wait until 60m
-            if (threatSpeed < 40 && distance < 20 || threatSpeed >= 40 && distance < 60) && !arModel.isRecordingVideo {
+            if (threatSpeed < 40 && distance < 20 || threatSpeed >= 40 && distance < 30 || threatSpeed >= 80 && distance < 40) && !arModel.isRecordingVideo {
                 deviceModel?.sendMessage("\(distance)m \(threatSpeed)km/h")
                 arModel.startVideoRecording()
             }

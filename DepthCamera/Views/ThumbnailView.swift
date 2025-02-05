@@ -16,7 +16,11 @@ struct ThumbnailView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @State private var isShowingFilePicker = false
+    @State private var hasPickedFile = false
+    @State private var hardCodedFiles = false
+    @State private var selectedFile: URL? = nil
     
+   
     var body: some View {
         Button(action: {
             isShowingFilePicker = true
@@ -33,19 +37,85 @@ struct ThumbnailView: View {
                             .stroke(Color.white, lineWidth: thumbnailStrokeWidth)
                     )
             }
-            .onAppear {
+        }
+        .sheet(isPresented: $hasPickedFile) {
+            let uiImage = UIImage(contentsOfFile: selectedFile!.path)!
+            VStack {
+                Image(uiImage: uiImage)
+                    .resizable().scaledToFit().frame(minWidth: 100, maxWidth: 500, minHeight: 100, maxHeight: 500)
+                    .onAppear(){
+                        // start performing inference
+                        model.manualInference(image: uiImage, imageURL: selectedFile!.absoluteURL)
+                    }
+                
+                if let semanticImage = model.lastSemanticImage {
+                    semanticImage
+                        .resizable().scaledToFit().frame(minWidth: 100, maxWidth: 500, minHeight: 100, maxHeight: 500)
+                } else {
+                    Text("Performing inference...")
+                }
+
+                Button("Dismiss") {
+                    hasPickedFile = false
+                    selectedFile = nil
+                }
             }
         }
-        .sheet(isPresented: $isShowingFilePicker) {
-            DocumentPicker(directoryURL: getDocumentsDirectory())
+        // this is MUCH easier to use than the older documentpicker
+        .fileImporter(isPresented: $isShowingFilePicker, allowedContentTypes: [.item]) { result in
+            switch result {
+            case .success(let fileurl):
+                selectedFile = fileurl
+                hasPickedFile = true
+            case .failure(let error):
+                print(error)
+            }
+        }
+        
+    }
+}
+
+struct ImageProcessingView: View {
+    @State var model : ARViewModel
+    
+    let imageNames = ["upsidedown", "rightsideup"] // Must be in Assets.xcassets
+    
+    @State private var ciImages: [CIImage] = []
+    @State private var cgImages: [CGImage] = []
+    
+    var body: some View {
+        HStack {
+            ForEach(imageNames, id: \.self) { imageName in
+                Image(imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+            }
+        }
+        .onAppear {
+            loadImages()
         }
     }
     
-    func getDocumentsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0]
+    func loadImages() {
+        var loadedCIImages: [CIImage] = []
+        
+        for imageName in imageNames {
+            if let uiImage = UIImage(named: imageName) {
+                if let ciImage = CIImage(image: uiImage) {
+                    loadedCIImages.append(ciImage)
+                    model.manualInferenceOnly(image: uiImage)
+                }
+            }
+        }
+        // Update State
+        ciImages = loadedCIImages
+        
+        print("CIImages Loaded: \(ciImages.count)")
     }
 }
+
+
 
 struct ThumbnailImageView: View {
     var uiImage: UIImage

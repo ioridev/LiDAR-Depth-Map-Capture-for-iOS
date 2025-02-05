@@ -7,17 +7,20 @@ import SwiftUI
 import tiff_ios
 
 struct ContentView: View {
-    var deviceViewModel: DeviceViewModel
+    
+    // most of the models ... DataModel not here b/c it's used by ARViewModel only
+    // these other models have a lot of interdependencies
+    //  - radarViewModel needs to tell ARViewModel to start recording
+    //  - ARViewModel needs to communicate with Garmin to feed it data (deviceViewModel)
+    //  - and with mybiketraffic website to broadcast live traffic data (MBTViewModel)
+    var deviceViewModel: DeviceViewModel // these two models are initialized in App so we can start the connection to ConnectIQ and MBT oauth before anything is displayed
     var mbtViewModel: MBTViewModel
     @StateObject private var arViewModel = ARViewModel()
     @StateObject private var radarViewModel = RadarViewModel()
     
     @State private var buttonText: String = "Reconnect"
     @State private var isLongPressing: Bool = false
-    
-    @State private var isVideoMode = false
-    let previewCornerRadius: CGFloat = 15.0
-    
+        
     var body: some View {
         
         GeometryReader { geometry in
@@ -32,46 +35,48 @@ struct ContentView: View {
                         ARViewContainer(arViewModel: arViewModel)
                             .clipShape(
                                 RoundedRectangle(
-                                    cornerRadius: previewCornerRadius)
+                                    cornerRadius: 15.0)
                             )
                             .frame(width: width, height: height)
                     }
                     Spacer()
-                    
+
+                    // Hold most recently assesse semantic image here
+                    if let lastSemanticImage = arViewModel.lastSemanticImage {
+                        lastSemanticImage
+                            .resizable().frame(minWidth: 100, maxWidth: 500, minHeight: 100, maxHeight: 500)
+                    }
+
+                    // scrollable lazy vstack so this can grow to many tens of thousands of rows if not hundreds of thousands during a long ride
                     ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 5) { // Reduced spacing between rows
+                        LazyVStack(alignment: .leading, spacing: 5) {
                             ForEach(radarViewModel.dataRecords, id: \.id) { record in
                                 HStack {
-                                    // Raw Data Column (Smaller)
                                     Text(record.raw)
-                                        .frame(width: 100, alignment: .leading) // Fixed smaller width
+                                        .frame(width: 100, alignment: .leading)
                                         .padding(.horizontal, 5)
-                                    
-                                    Divider()
-                                    
-                                    // Interpreted Data Column (More Space)
+                                    Divider() // two column like layout
                                     Text(record.interpreted)
-                                        .frame(maxWidth: .infinity, alignment: .leading) // Take remaining space
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                         .padding(.horizontal, 5)
                                 }
-                                .font(.system(size: 12, weight: .regular, design: .monospaced)) // Reduced font size
-                                .frame(height: 13) // Reduced row height
+                                .font(.system(size: 12, weight: .regular, design: .monospaced))
+                                .frame(height: 13)
                             }
                         }
                     }
-                    .frame(height: 200) // Reduced height of the ScrollView
+                    .frame(height: 200)
                     .border(Color.gray, width: 1)
                     .padding(.horizontal)
                     
+                    // Radar status area
                     HStack {
                         VStack {
-                            // Display the radar data here and whether is is connected
                             Text(
                                 radarViewModel.isBluetoothAvailable
                                 ? "Bluetooth Available" : "Bluetooth Unavailable"
                             ).foregroundColor(
                                 radarViewModel.isBluetoothAvailable ? .green : .red)
-                            
                             Text(
                                 radarViewModel.isRadarConnected
                                 ? "Radar Connected" : "Radar Disconnected"
@@ -103,7 +108,8 @@ struct ContentView: View {
                                     radarViewModel.scanForDevices() // Trigger scanning
                                 }
                         )
-                    }                        .disabled(radarViewModel.isScanning)
+                    }
+                    .disabled(radarViewModel.isScanning)
                     
                     
                     CaptureButtonPanelView(
@@ -123,6 +129,7 @@ struct ContentView: View {
             radarViewModel.arModel = arViewModel
             radarViewModel.deviceModel = deviceViewModel
             deviceViewModel.radarModel = radarViewModel
+            arViewModel.deviceModel = deviceViewModel
         }
         .environment(\.colorScheme, .dark)
     }

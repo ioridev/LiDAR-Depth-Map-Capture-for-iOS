@@ -51,6 +51,18 @@ class SensorManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         // Stop location updates
         locationManager.stopUpdatingLocation()
     }
+    
+    func loadData(metadataFileURL: URL) -> Metadata? {
+        do {
+            let data = try Data(contentsOf: metadataFileURL)
+            let decoder = JSONDecoder()
+            let metadata = try decoder.decode(Metadata.self, from: data)
+            return metadata
+        } catch {
+            print("Error reading or decoding JSON:", error)
+            return nil
+        }
+    }
 
     func saveData(textFileURL: URL, timestamp: Double, cameraIntrinsics: Matrix3x3) -> Metadata {
 
