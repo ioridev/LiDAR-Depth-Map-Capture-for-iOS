@@ -12,8 +12,9 @@ import SwiftUI
 struct ThumbnailView: View {
     private let thumbnailFrameWidth: CGFloat = 60.0
     private let thumbnailFrameHeight: CGFloat = 60.0
-    private let thumbnailFrameCornerRadius: CGFloat = 10.0
+    private let thumbnailFrameCornerRadius: CGFloat = 12.0
     private let thumbnailStrokeWidth: CGFloat = 2
+    @State private var isPressed = false
     
     
     
@@ -24,23 +25,53 @@ struct ThumbnailView: View {
 
     var body: some View {
           Button(action: {
+              withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                  isPressed = true
+              }
+              
+              let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+              impactFeedback.impactOccurred()
+              
               isShowingFilePicker = true
+              
+              DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                  withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                      isPressed = false
+                  }
+              }
           }) {
-              Group {
-                  Image(systemName: "photo.on.rectangle")
-                      .resizable()
-                      .aspectRatio(contentMode: .fit)
-                      .padding(16)
-                      .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
-                      .foregroundColor(.primary)
-                      .overlay(
-                          RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
-                              .stroke(Color.white, lineWidth: thumbnailStrokeWidth)
+              ZStack {
+                  // Background with gradient
+                  RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
+                      .fill(
+                          LinearGradient(
+                              colors: [Color.black.opacity(0.3), Color.black.opacity(0.5)],
+                              startPoint: .topLeading,
+                              endPoint: .bottomTrailing
+                          )
                       )
+                      .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
+                  
+                  // Icon
+                  Image(systemName: "photo.stack.fill")
+                      .font(.system(size: 24))
+                      .foregroundColor(.white)
+                      .shadow(color: Color.black.opacity(0.2), radius: 2, x: 0, y: 1)
+                  
+                  // Border overlay
+                  RoundedRectangle(cornerRadius: thumbnailFrameCornerRadius)
+                      .strokeBorder(
+                          LinearGradient(
+                              colors: [Color.white.opacity(0.8), Color.white.opacity(0.4)],
+                              startPoint: .topLeading,
+                              endPoint: .bottomTrailing
+                          ),
+                          lineWidth: thumbnailStrokeWidth
+                      )
+                      .frame(width: thumbnailFrameWidth, height: thumbnailFrameHeight)
               }
-              .onAppear {
-                  // onAppear処理が必要な場合はここに記述
-              }
+              .scaleEffect(isPressed ? 0.9 : 1.0)
+              .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 3)
           }
           .sheet(isPresented: $isShowingFilePicker) {
               DocumentPicker(directoryURL: getDocumentsDirectory())

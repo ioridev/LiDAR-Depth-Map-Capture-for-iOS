@@ -20,6 +20,8 @@ struct CaptureButton: View {
     CaptureButton.innerPadding
     
     @ObservedObject var model: ARViewModel
+    @State private var isPressed = false
+    @State private var showPulse = false
     
     init(model: ARViewModel) {
         self.model = model
@@ -27,13 +29,43 @@ struct CaptureButton: View {
     
     
     var body: some View {
-        Button(action: {
-            model.saveDepthMap()
-        },label: {
+        ZStack {
+            // Pulse animation effect
+            if showPulse {
+                Circle()
+                    .stroke(Color.white.opacity(0.8), lineWidth: 2)
+                    .frame(width: CaptureButton.outerDiameter + 20, height: CaptureButton.outerDiameter + 20)
+                    .scaleEffect(showPulse ? 1.5 : 1.0)
+                    .opacity(showPulse ? 0 : 1)
+                    .animation(.easeOut(duration: 0.6), value: showPulse)
+            }
             
-            ManualCaptureButtonView()
-            
-        })
+            Button(action: {
+                // Haptic feedback
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+                
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isPressed = true
+                    showPulse = true
+                }
+                
+                model.saveDepthMap()
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    showPulse = false
+                }
+            }, label: {
+                ManualCaptureButtonView()
+                    .scaleEffect(isPressed ? 0.9 : 1.0)
+            })
+        }
     }
 }
 
