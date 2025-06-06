@@ -214,6 +214,7 @@ struct CaptureDetailView: View {
     let capture: CaptureItem
     @Environment(\.dismiss) var dismiss
     @State private var depthImage: UIImage?
+    @State private var showingDepthDetail = false
     
     var body: some View {
         NavigationView {
@@ -259,6 +260,24 @@ struct CaptureDetailView: View {
                                                 .stroke(Color.blue.opacity(0.3), lineWidth: 1)
                                         )
                                         .shadow(color: Color.blue.opacity(0.3), radius: 10, x: 0, y: 5)
+                                        .onTapGesture {
+                                            showingDepthDetail = true
+                                        }
+                                        .overlay(
+                                            VStack {
+                                                Spacer()
+                                                HStack {
+                                                    Spacer()
+                                                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                                        .font(.caption)
+                                                        .foregroundColor(.white)
+                                                        .padding(6)
+                                                        .background(Color.black.opacity(0.6))
+                                                        .clipShape(Circle())
+                                                }
+                                            }
+                                            .padding(8)
+                                        )
                                 } else {
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(Color.gray.opacity(0.2))
@@ -303,6 +322,9 @@ struct CaptureDetailView: View {
             }
             .onAppear {
                 loadDepthImage()
+            }
+            .sheet(isPresented: $showingDepthDetail) {
+                DepthMapDetailView(depthURL: capture.depthURL)
             }
         }
     }
