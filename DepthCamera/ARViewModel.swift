@@ -15,6 +15,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     @Published var processedConfidenceImage: UIImage?
     @Published var showDepthMap: Bool = true
     @Published var showConfidenceMap: Bool = true
+    @Published var captureSuccessful: Bool = false
     @Published var lastCapture: UIImage? = nil {
         didSet {
             print("lastCapture was set.")
@@ -79,6 +80,12 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         
         DispatchQueue.main.async {
             self.lastCapture = uiImage
+            self.captureSuccessful = true
+            
+            // Reset after animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.captureSuccessful = false
+            }
         }
      
         
