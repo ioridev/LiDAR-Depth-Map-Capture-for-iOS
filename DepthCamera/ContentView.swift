@@ -141,13 +141,12 @@ struct ContentView : View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 60)
+                    .padding(.top, 50)
                     .background(
                         LinearGradient(colors: [Color.black.opacity(0.9), Color.black.opacity(0.7), Color.clear], 
                                      startPoint: .top, 
                                      endPoint: .bottom)
-                            .frame(height: 300)
-                            .ignoresSafeArea()
+                            .ignoresSafeArea(edges: .top)
                             .allowsHitTesting(false)
                     )
                     
