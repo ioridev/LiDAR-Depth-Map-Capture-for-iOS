@@ -29,16 +29,17 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         let currentTime = CACurrentMediaTime()
         
         if currentTime - lastDepthUpdate >= depthUpdateInterval {
-        
-        // DepthMapの処理と表示
-        if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
-            processDepthMap(depthMap)
-        }
+            lastDepthUpdate = currentTime  // タイマーを更新
+            
+            // DepthMapの処理と表示
+            if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
+                processDepthMap(depthMap)
+            }
 
-        // ConfidenceMapの処理と表示
-        if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
-            processConfidenceMap(confidenceMap)
-        }
+            // ConfidenceMapの処理と表示
+            if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
+                processConfidenceMap(confidenceMap)
+            }
         }
         
     }
@@ -233,24 +234,6 @@ extension ARViewModel {
             self?.processedConfidenceImage = rotatedImage
         }
 
-        // 信頼度の分布を集計
-        var confidenceCounts = [0, 0, 0, 0]
-        for y in 0..<height {
-            for x in 0..<width {
-                let confidence = Int(buffer?[y * width + x] ?? 0)
-                if confidence >= 0 && confidence < 4 {
-                    confidenceCounts[confidence] += 1
-                }
-            }
-        }
-        
-        // 分布をログ出力
-        let total = Float(width * height)
-        print("Confidence distribution:")
-        print("None (0): \(Float(confidenceCounts[0]) / total * 100)%")
-        print("Low (1): \(Float(confidenceCounts[1]) / total * 100)%")
-        print("High (2): \(Float(confidenceCounts[2]) / total * 100)%")
-        print("Highest (3): \(Float(confidenceCounts[3]) / total * 100)%")
     }
 }
 
