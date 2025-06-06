@@ -22,6 +22,7 @@ struct ThumbnailView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @State private var isShowingFilePicker = false
+    @State private var isShowingCaptureList = false
 
     var body: some View {
           Button(action: {
@@ -32,7 +33,7 @@ struct ThumbnailView: View {
               let impactFeedback = UIImpactFeedbackGenerator(style: .light)
               impactFeedback.impactOccurred()
               
-              isShowingFilePicker = true
+              isShowingCaptureList = true
               
               DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                   withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -75,6 +76,9 @@ struct ThumbnailView: View {
           }
           .sheet(isPresented: $isShowingFilePicker) {
               DocumentPicker(directoryURL: getDocumentsDirectory())
+          }
+          .fullScreenCover(isPresented: $isShowingCaptureList) {
+              CaptureListView()
           }
       }
       

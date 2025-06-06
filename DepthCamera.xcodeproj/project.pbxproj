@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		71C3B3AD7A98BA3561007192 /* Pods_DepthCameraTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */; };
+		8943625B2DF38CA900EC952D /* CaptureFileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8943625A2DF38CA900EC952D /* CaptureFileManager.swift */; };
+		8943625D2DF38CBA00EC952D /* CaptureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8943625C2DF38CBA00EC952D /* CaptureListView.swift */; };
 		899DD7032CF71263004FE108 /* ARViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7022CF71263004FE108 /* ARViewModel.swift */; };
 		899DD7052CF71285004FE108 /* ARViewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7042CF71285004FE108 /* ARViewContainer.swift */; };
 		899DD7072CF712D2004FE108 /* ThumbnailImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 899DD7062CF712D2004FE108 /* ThumbnailImageView.swift */; };
@@ -49,6 +51,8 @@
 		5AD708927E8DD9D65325735B /* Pods-DepthCameraTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5C5E46324A2B9674F59F1F8C /* Pods_DepthCameraTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCameraTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		71F5030F13FAB4BF6261DA2C /* Pods-DepthCamera-DepthCameraUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		8943625A2DF38CA900EC952D /* CaptureFileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureFileManager.swift; sourceTree = "<group>"; };
+		8943625C2DF38CBA00EC952D /* CaptureListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureListView.swift; sourceTree = "<group>"; };
 		899DD7022CF71263004FE108 /* ARViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewModel.swift; sourceTree = "<group>"; };
 		899DD7042CF71285004FE108 /* ARViewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewContainer.swift; sourceTree = "<group>"; };
 		899DD7062CF712D2004FE108 /* ThumbnailImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailImageView.swift; sourceTree = "<group>"; };
@@ -138,9 +142,11 @@
 				899DD7022CF71263004FE108 /* ARViewModel.swift */,
 				89B6171F2B14740A00280111 /* ContentView.swift */,
 				899DD7102CF713AC004FE108 /* ManualCaptureButtonView.swift */,
+				8943625A2DF38CA900EC952D /* CaptureFileManager.swift */,
 				899DD70E2CF71376004FE108 /* CaptureButton.swift */,
 				899DD70C2CF7135D004FE108 /* DocumentPicker.swift */,
 				899DD70A2CF71336004FE108 /* ThumbnailView.swift */,
+				8943625C2DF38CBA00EC952D /* CaptureListView.swift */,
 				899DD7082CF7130A004FE108 /* CaptureButtonPanelView.swift */,
 				899DD7062CF712D2004FE108 /* ThumbnailImageView.swift */,
 				89B6171D2B14740A00280111 /* DepthCameraApp.swift */,
@@ -445,10 +451,12 @@
 				899DD7072CF712D2004FE108 /* ThumbnailImageView.swift in Sources */,
 				899DD7052CF71285004FE108 /* ARViewContainer.swift in Sources */,
 				899DD70D2CF7135D004FE108 /* DocumentPicker.swift in Sources */,
+				8943625B2DF38CA900EC952D /* CaptureFileManager.swift in Sources */,
 				89B617202B14740A00280111 /* ContentView.swift in Sources */,
 				899DD70B2CF71336004FE108 /* ThumbnailView.swift in Sources */,
 				899DD70F2CF71376004FE108 /* CaptureButton.swift in Sources */,
 				89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */,
+				8943625D2DF38CBA00EC952D /* CaptureListView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -21,6 +21,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             print("lastCapture was set.")
         }
     }
+    @Published var lastCaptureURL: URL?
     
     private var lastDepthUpdate: TimeInterval = 0
     private let depthUpdateInterval: TimeInterval = 0.1 // 10fps (1/10秒)
@@ -80,6 +81,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         
         DispatchQueue.main.async {
             self.lastCapture = uiImage
+            self.lastCaptureURL = imageFileURL
             self.captureSuccessful = true
             
             // Reset after animation
