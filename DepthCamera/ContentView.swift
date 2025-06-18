@@ -84,6 +84,46 @@ struct ContentView : View {
                             }
                         }
                         
+                        // PromptDA用のコントロール
+                        VStack(alignment: .center, spacing: 12) {
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    arViewModel.usePromptDA.toggle()
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: arViewModel.usePromptDA ? "brain.head.profile" : "brain")
+                                        .font(.system(size: 16))
+                                    Text("PromptDA")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(arViewModel.usePromptDA ? 
+                                            LinearGradient(colors: [Color.purple, Color.purple.opacity(0.8)], 
+                                                         startPoint: .topLeading, 
+                                                         endPoint: .bottomTrailing) :
+                                            LinearGradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.2)], 
+                                                         startPoint: .topLeading, 
+                                                         endPoint: .bottomTrailing)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                        )
+                                )
+                                .shadow(color: arViewModel.usePromptDA ? Color.purple.opacity(0.3) : Color.clear, radius: 8, x: 0, y: 4)
+                                .scaleEffect(arViewModel.usePromptDA ? 1.0 : 0.95)
+                            }
+                            .transition(.asymmetric(
+                                insertion: .scale.combined(with: .opacity),
+                                removal: .scale.combined(with: .opacity)
+                            ))
+                        }
+                        
                         // Confidenceマップ用のコントロール
                         VStack(alignment: .center, spacing: 12) {
                             Button(action: {

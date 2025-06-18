@@ -23,31 +23,93 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     }
     @Published var lastCaptureURL: URL?
     
+    // PromptDA depth estimation
+    private var depthEstimator: PromptDADepthEstimator?
+    @Published var usePromptDA: Bool = true
+    
     private var lastDepthUpdate: TimeInterval = 0
-    private let depthUpdateInterval: TimeInterval = 0.1 // 10fps (1/10秒)
+    private let depthUpdateInterval: TimeInterval = 0.5 // 2fps for PromptDA preview
+    
+    override init() {
+        super.init()
+        // Initialize PromptDA
+        depthEstimator = PromptDADepthEstimator()
+        print("ARViewModel: PromptDA depth estimator initialized")
+    }
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        latestDepthMap = frame.sceneDepth?.depthMap
         latestImage = frame.capturedImage
         let currentTime = CACurrentMediaTime()
         
         if currentTime - lastDepthUpdate >= depthUpdateInterval {
             lastDepthUpdate = currentTime  // タイマーを更新
             
-            // DepthMapの処理と表示
-            if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
-                processDepthMap(depthMap)
-            }
-
-            // ConfidenceMapの処理と表示
-            if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
-                processConfidenceMap(confidenceMap)
+            // Use PromptDA for depth estimation if enabled
+            if usePromptDA, let estimator = depthEstimator {
+                if estimator.shouldProcessFrame(timestamp: frame.timestamp) {
+                    print("ARViewModel: Using PromptDA for depth estimation")
+                    // For preview, don't resize to save performance
+                    if let promptDADepth = estimator.estimateDepth(from: frame.capturedImage, lidarDepth: frame.sceneDepth?.depthMap, resizeToOriginal: false) {
+                        latestDepthMap = promptDADepth
+                        print("ARViewModel: PromptDA depth estimation successful")
+                        processDepthMap(promptDADepth)
+                        
+                        // Also create confidence map from PromptDA
+                        if showConfidenceMap, let confMap = estimator.createConfidenceMap(from: promptDADepth) {
+                            processConfidenceMap(confMap)
+                        }
+                    } else {
+                        print("ARViewModel: PromptDA depth estimation failed, falling back to ARKit depth")
+                        // Fall back to ARKit depth
+                        latestDepthMap = frame.sceneDepth?.depthMap
+                        if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
+                            processDepthMap(depthMap)
+                        }
+                        if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
+                            processConfidenceMap(confidenceMap)
+                        }
+                    }
+                } else {
+                    // Not time to process with PromptDA, use ARKit depth
+                    latestDepthMap = frame.sceneDepth?.depthMap
+                    if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
+                        processDepthMap(depthMap)
+                    }
+                    if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
+                        processConfidenceMap(confidenceMap)
+                    }
+                }
+            } else {
+                // PromptDA disabled or not initialized, use ARKit depth
+                latestDepthMap = frame.sceneDepth?.depthMap
+                if showDepthMap, let depthMap = frame.sceneDepth?.depthMap {
+                    processDepthMap(depthMap)
+                }
+                if showConfidenceMap, let confidenceMap = frame.sceneDepth?.confidenceMap {
+                    processConfidenceMap(confidenceMap)
+                }
             }
         }
-        
     }
     
     func saveDepthMap() {
-        guard let depthMap = latestDepthMap, let image = latestImage else {
+        // Use PromptDA for final capture if enabled
+        var depthMapToSave: CVPixelBuffer?
+        
+        if usePromptDA, let estimator = depthEstimator, let latestImage = latestImage {
+            print("ARViewModel: Running PromptDA for capture...")
+            // Force process the current frame for capture (keep 182x252 resolution)
+            depthMapToSave = estimator.estimateDepth(from: latestImage, lidarDepth: latestDepthMap, resizeToOriginal: false)
+            if depthMapToSave == nil {
+                print("ARViewModel: PromptDA failed for capture, using ARKit depth")
+                depthMapToSave = latestDepthMap
+            } else {
+                print("ARViewModel: Using PromptDA depth for capture")
+            }
+        } else {
+            depthMapToSave = latestDepthMap
+        }
+        
+        guard let depthMap = depthMapToSave, let image = latestImage else {
             print("Depth map or image is not available.")
             return
         }

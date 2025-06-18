@@ -27,6 +27,10 @@
 		89B6173A2B14740B00280111 /* DepthCameraUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B617392B14740B00280111 /* DepthCameraUITests.swift */; };
 		89B6173C2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B6173B2B14740B00280111 /* DepthCameraUITestsLaunchTests.swift */; };
 		89DE42E22CB3DECF00D43C0A /* color 2.glb in Resources */ = {isa = PBXBuildFile; fileRef = 89DE42E12CB3DECF00D43C0A /* color 2.glb */; };
+		89E4CE382E0268FF003F4665 /* model_fp16.onnx in Resources */ = {isa = PBXBuildFile; fileRef = 89E4CE372E0268FF003F4665 /* model_fp16.onnx */; };
+		89E4CE3A2E026908003F4665 /* PromptDADepthEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E4CE392E026908003F4665 /* PromptDADepthEstimator.swift */; };
+		89E4CE3D2E026963003F4665 /* onnxruntime in Frameworks */ = {isa = PBXBuildFile; productRef = 89E4CE3C2E026963003F4665 /* onnxruntime */; };
+		89E4CE3F2E026963003F4665 /* onnxruntime_extensions in Frameworks */ = {isa = PBXBuildFile; productRef = 89E4CE3E2E026963003F4665 /* onnxruntime_extensions */; };
 		AF6D6D435FA0400B15234CB6 /* Pods_DepthCamera_DepthCameraUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */; };
 		DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E227FAB191BC5550BAC2DB4A /* Pods_DepthCamera.framework */; };
 /* End PBXBuildFile section */
@@ -77,6 +81,8 @@
 		89B6174A2B14802900280111 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		89B8A9712BB2D33D00FD7106 /* Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		89DE42E12CB3DECF00D43C0A /* color 2.glb */ = {isa = PBXFileReference; lastKnownFileType = file; path = "color 2.glb"; sourceTree = "<group>"; };
+		89E4CE372E0268FF003F4665 /* model_fp16.onnx */ = {isa = PBXFileReference; lastKnownFileType = file; path = model_fp16.onnx; sourceTree = "<group>"; };
+		89E4CE392E026908003F4665 /* PromptDADepthEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptDADepthEstimator.swift; sourceTree = "<group>"; };
 		8F9F679CF8B7EE44C3DAACAC /* Pods_DepthCamera_DepthCameraUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DepthCamera_DepthCameraUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC19CA33E5E5796BB47E68BF /* Pods-DepthCameraTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCameraTests.release.xcconfig"; path = "Target Support Files/Pods-DepthCameraTests/Pods-DepthCameraTests.release.xcconfig"; sourceTree = "<group>"; };
 		B7D605FFB229CC868C730AE8 /* Pods-DepthCamera-DepthCameraUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; path = "Target Support Files/Pods-DepthCamera-DepthCameraUITests/Pods-DepthCamera-DepthCameraUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -90,7 +96,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89E4CE3D2E026963003F4665 /* onnxruntime in Frameworks */,
 				DB0AE426B16D9FA02B997FED /* Pods_DepthCamera.framework in Frameworks */,
+				89E4CE3F2E026963003F4665 /* onnxruntime_extensions in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,6 +155,8 @@
 				8943625A2DF38CA900EC952D /* CaptureFileManager.swift */,
 				899DD70E2CF71376004FE108 /* CaptureButton.swift */,
 				8943625E2DF3919500EC952D /* DepthMapDetailView.swift */,
+				89E4CE372E0268FF003F4665 /* model_fp16.onnx */,
+				89E4CE392E026908003F4665 /* PromptDADepthEstimator.swift */,
 				899DD70C2CF7135D004FE108 /* DocumentPicker.swift */,
 				899DD70A2CF71336004FE108 /* ThumbnailView.swift */,
 				8943625C2DF38CBA00EC952D /* CaptureListView.swift */,
@@ -302,6 +312,9 @@
 				Base,
 			);
 			mainGroup = 89B617112B14740A00280111;
+			packageReferences = (
+				89E4CE3B2E026963003F4665 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */,
+			);
 			productRefGroup = 89B6171B2B14740A00280111 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -319,6 +332,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				89DE42E22CB3DECF00D43C0A /* color 2.glb in Resources */,
+				89E4CE382E0268FF003F4665 /* model_fp16.onnx in Resources */,
 				89B617262B14740B00280111 /* Preview Assets.xcassets in Resources */,
 				89B617222B14740B00280111 /* Assets.xcassets in Resources */,
 			);
@@ -459,6 +473,7 @@
 				899DD70B2CF71336004FE108 /* ThumbnailView.swift in Sources */,
 				899DD70F2CF71376004FE108 /* CaptureButton.swift in Sources */,
 				89B6171E2B14740A00280111 /* DepthCameraApp.swift in Sources */,
+				89E4CE3A2E026908003F4665 /* PromptDADepthEstimator.swift in Sources */,
 				8943625D2DF38CBA00EC952D /* CaptureListView.swift in Sources */,
 				8943625F2DF3919500EC952D /* DepthMapDetailView.swift in Sources */,
 			);
@@ -843,6 +858,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		89E4CE3B2E026963003F4665 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/microsoft/onnxruntime-swift-package-manager";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.20.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		89E4CE3C2E026963003F4665 /* onnxruntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 89E4CE3B2E026963003F4665 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */;
+			productName = onnxruntime;
+		};
+		89E4CE3E2E026963003F4665 /* onnxruntime_extensions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 89E4CE3B2E026963003F4665 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */;
+			productName = onnxruntime_extensions;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 89B617122B14740A00280111 /* Project object */;
 }
