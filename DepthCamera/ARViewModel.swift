@@ -212,7 +212,9 @@ extension ARViewModel {
             for x in 0..<width {
                 let depth = buffer?[y * width + x] ?? 0
                 // 深度を0-1の範囲に正規化（例：0-5メートルを想定）
-                let normalizedDepth = min(max(depth / 5.0, 0.0), 1.0)
+                // NaNやInfiniteをチェック
+                let validDepth = depth.isNaN || depth.isInfinite ? 0.0 : depth
+                let normalizedDepth = min(max(validDepth / 5.0, 0.0), 1.0)
                 let pixel = UInt8(normalizedDepth * 255.0)
                 
                 let index = (y * width + x) * 4
