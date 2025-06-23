@@ -239,12 +239,10 @@ extension ARViewModel {
         let cgImage = context.makeImage() else { return }
 
         DispatchQueue.main.async { [weak self] in
-            // PromptDAの出力をそのまま表示（回転なし）
-            let image = UIImage(cgImage: cgImage)
-            self?.processedDepthImage = image
-            
-            // デバッグ: サイズを確認
-            print("processDepthMap: Image size: \(cgImage.width)x\(cgImage.height)")
+            // 画像を90度回転
+            let rotatedImage = UIImage(cgImage: cgImage)
+                .rotate(radians: .pi/2) // 90度回転
+            self?.processedDepthImage = rotatedImage
         }
     }
 
