@@ -47,6 +47,8 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
             if usePromptDA, let estimator = depthEstimator {
                 if estimator.shouldProcessFrame(timestamp: frame.timestamp) {
                     print("ARViewModel: Using PromptDA for depth estimation")
+                    
+                    
                     // For preview, don't resize to save performance
                     if let promptDADepth = estimator.estimateDepth(from: frame.capturedImage, lidarDepth: frame.sceneDepth?.depthMap, resizeToOriginal: false) {
                         latestDepthMap = promptDADepth
@@ -92,27 +94,17 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
     }
     
     func saveDepthMap() {
-        // Use PromptDA for final capture if enabled
-        var depthMapToSave: CVPixelBuffer?
-        
-        if usePromptDA, let estimator = depthEstimator, let latestImage = latestImage {
-            print("ARViewModel: Running PromptDA for capture...")
-            // Force process the current frame for capture (keep 182x252 resolution)
-            depthMapToSave = estimator.estimateDepth(from: latestImage, lidarDepth: latestDepthMap, resizeToOriginal: false)
-            if depthMapToSave == nil {
-                print("ARViewModel: PromptDA failed for capture, using ARKit depth")
-                depthMapToSave = latestDepthMap
-            } else {
-                print("ARViewModel: Using PromptDA depth for capture")
-            }
-        } else {
-            depthMapToSave = latestDepthMap
-        }
-        
-        guard let depthMap = depthMapToSave, let image = latestImage else {
+        // Simply use the current latestDepthMap that was used for preview
+        guard let depthMap = latestDepthMap, let image = latestImage else {
             print("Depth map or image is not available.")
             return
         }
+        
+        // デバッグ: 保存するdepthMapのサイズを確認
+        let saveWidth = CVPixelBufferGetWidth(depthMap)
+        let saveHeight = CVPixelBufferGetHeight(depthMap)
+        let saveBytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
+        print("Saving depth map: \(saveWidth)x\(saveHeight), bytesPerRow=\(saveBytesPerRow)")
         
         let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let dateFormatter = DateFormatter()
@@ -128,10 +120,13 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         }
         
         let timestamp = Date().timeIntervalSince1970
-        let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.tiff")
+        let depthFileURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.png")
+        let depthTiffURL = dateDirURL.appendingPathComponent("\(timestamp)_depth.tiff")
         let imageFileURL = dateDirURL.appendingPathComponent("\(timestamp)_image.jpg")
         
-        writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthFileURL)
+        // Save as both PNG and TIFF for comparison
+        writeDepthMapTo16BitPNG(depthMap: depthMap, url: depthFileURL)
+        writeDepthMapToTIFFWithLibTIFF(depthMap: depthMap, url: depthTiffURL)
         saveImage(image: image, url: imageFileURL)
         
         
@@ -155,6 +150,7 @@ class ARViewModel: NSObject, ARSessionDelegate, ObservableObject {
         
         
         print("Depth map saved to \(depthFileURL)")
+        print("Depth TIFF saved to \(depthTiffURL)")
         print("Image saved to \(imageFileURL)")
     }
 }
@@ -204,13 +200,16 @@ extension ARViewModel {
 
         let width = CVPixelBufferGetWidth(depthMap)
         let height = CVPixelBufferGetHeight(depthMap)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
         var normalizedData = [UInt8](repeating: 0, count: width * height * 4)
 
-        let buffer = CVPixelBufferGetBaseAddress(depthMap)?.assumingMemoryBound(to: Float32.self)
+        let buffer = CVPixelBufferGetBaseAddress(depthMap)
+        let floatsPerRow = bytesPerRow / MemoryLayout<Float32>.size
         
         for y in 0..<height {
             for x in 0..<width {
-                let depth = buffer?[y * width + x] ?? 0
+                let floatBuffer = buffer?.assumingMemoryBound(to: Float32.self)
+                let depth = floatBuffer?[y * floatsPerRow + x] ?? 0
                 // 深度を0-1の範囲に正規化（例：0-5メートルを想定）
                 // NaNやInfiniteをチェック
                 let validDepth = depth.isNaN || depth.isInfinite ? 0.0 : depth
@@ -240,10 +239,12 @@ extension ARViewModel {
         let cgImage = context.makeImage() else { return }
 
         DispatchQueue.main.async { [weak self] in
-            // 画像を90度回転
-            let rotatedImage = UIImage(cgImage: cgImage)
-                .rotate(radians: .pi/2) // 90度回転
-            self?.processedDepthImage = rotatedImage
+            // PromptDAの出力をそのまま表示（回転なし）
+            let image = UIImage(cgImage: cgImage)
+            self?.processedDepthImage = image
+            
+            // デバッグ: サイズを確認
+            print("processDepthMap: Image size: \(cgImage.width)x\(cgImage.height)")
         }
     }
 
@@ -301,7 +302,7 @@ extension ARViewModel {
         let cgImage = context.makeImage() else { return }
 
         DispatchQueue.main.async { [weak self] in
-            // 画像を90度回転
+            // 画像を90度回転（ARKitのconfidenceMapは回転が必要）
             let rotatedImage = UIImage(cgImage: cgImage)
                 .rotate(radians: .pi/2) // 90度回転
             self?.processedConfidenceImage = rotatedImage

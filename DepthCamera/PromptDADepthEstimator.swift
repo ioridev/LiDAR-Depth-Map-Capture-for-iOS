@@ -211,36 +211,47 @@ class PromptDADepthEstimator {
         let tensorData = try ortValue.tensorData() as NSData
         let tensorInfo = try ortValue.tensorTypeAndShapeInfo()
         let shape = tensorInfo.shape
+        let shapeCount = shape.count
+        let shape0 = shape.count > 0 ? Int(shape[0]) : 0
+        let shape1 = shape.count > 1 ? Int(shape[1]) : 0
+        let shape2 = shape.count > 2 ? Int(shape[2]) : 0
         
         print("PromptDADepthEstimator: Output tensor shape: \(shape)")
         
         // Handle different output shapes
         let height: Int
         let width: Int
+        let needsTranspose: Bool
         
         if shape.count == 4 {
             // Shape is [batch, channels, height, width]
             height = Int(shape[2])
             width = Int(shape[3])
+            needsTranspose = false
         } else if shape.count == 3 {
             // Shape is [batch, height, width] or [channels, height, width]
             if Int(shape[0]) == 1 {
-                // [1, height, width]
-                height = Int(shape[1])
-                width = Int(shape[2])
+                // [1, height, width] - PromptDA outputs [1, 182, 252]
+                height = Int(shape[1])  // 182
+                width = Int(shape[2])   // 252
+                needsTranspose = false
             } else {
                 // Assume [height, width, channels]
                 height = Int(shape[0])
                 width = Int(shape[1])
+                needsTranspose = false
             }
         } else if shape.count == 2 {
             // Shape is [height, width]
             height = Int(shape[0])
             width = Int(shape[1])
+            needsTranspose = false
         } else {
             throw NSError(domain: "PromptDADepthEstimator", code: -3,
                          userInfo: [NSLocalizedDescriptionKey: "Unexpected output shape: \(shape)"])
         }
+        
+        print("PromptDADepthEstimator: Creating CVPixelBuffer with width=\(width), height=\(height)")
         
         // Create output pixel buffer
         var pixelBuffer: CVPixelBuffer?
@@ -266,6 +277,7 @@ class PromptDADepthEstimator {
         let destBaseAddress = CVPixelBufferGetBaseAddress(buffer)!
         let destBytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
         let srcPtr = tensorData.bytes.assumingMemoryBound(to: Float32.self)
+        
         
         // Copy data row by row to handle potential padding
         for y in 0..<height {

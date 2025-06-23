@@ -236,9 +236,109 @@ struct ContentView : View {
 }
 
 
+func writeDepthMapTo16BitPNG(depthMap: CVPixelBuffer, url: URL) -> Bool {
+    let width = CVPixelBufferGetWidth(depthMap)
+    let height = CVPixelBufferGetHeight(depthMap)
+    
+    CVPixelBufferLockBaseAddress(depthMap, .readOnly)
+    defer { CVPixelBufferUnlockBaseAddress(depthMap, .readOnly) }
+    
+    guard let baseAddress = CVPixelBufferGetBaseAddress(depthMap) else {
+        return false
+    }
+    
+    let bytesPerRow = CVPixelBufferGetBytesPerRow(depthMap)
+    
+    // Create 16-bit grayscale image
+    var pixelData = [UInt16](repeating: 0, count: width * height)
+    
+    // Find min/max for normalization
+    var minDepth: Float = Float.greatestFiniteMagnitude
+    var maxDepth: Float = -Float.greatestFiniteMagnitude
+    
+    for y in 0..<height {
+        let rowPtr = baseAddress.advanced(by: y * bytesPerRow).assumingMemoryBound(to: Float32.self)
+        for x in 0..<width {
+            let depth = rowPtr[x]
+            if !depth.isNaN && !depth.isInfinite && depth > 0 {
+                minDepth = min(minDepth, depth)
+                maxDepth = max(maxDepth, depth)
+            }
+        }
+    }
+    
+    // Fallback if no valid depths found
+    if minDepth == Float.greatestFiniteMagnitude {
+        minDepth = 0
+        maxDepth = 5
+    }
+    
+    print("Depth range: \(minDepth) - \(maxDepth) meters")
+    
+    // Convert to 16-bit - create a simple gradient for testing
+    let useTestPattern = false // Set to true for debugging
+    
+    for y in 0..<height {
+        if useTestPattern {
+            // Test pattern: horizontal gradient
+            for x in 0..<width {
+                let normalizedDepth = Float(x) / Float(width)
+                pixelData[y * width + x] = UInt16(normalizedDepth * 65535)
+            }
+        } else {
+            let rowPtr = baseAddress.advanced(by: y * bytesPerRow).assumingMemoryBound(to: Float32.self)
+            for x in 0..<width {
+                let depth = rowPtr[x]
+                let normalizedDepth: Float
+                
+                if depth.isNaN || depth.isInfinite || depth <= 0 {
+                    normalizedDepth = 0
+                } else {
+                    normalizedDepth = (depth - minDepth) / (maxDepth - minDepth)
+                }
+                
+                pixelData[y * width + x] = UInt16(min(max(normalizedDepth, 0), 1) * 65535)
+            }
+        }
+    }
+    
+    // Create CGImage
+    let bitsPerComponent = 16
+    let bitsPerPixel = 16
+    let bytesPerRowOut = width * 2
+    
+    let colorSpace = CGColorSpaceCreateDeviceGray()
+    let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue | CGBitmapInfo.byteOrder16Big.rawValue)
+    
+    guard let context = CGContext(
+        data: &pixelData,
+        width: width,
+        height: height,
+        bitsPerComponent: bitsPerComponent,
+        bytesPerRow: bytesPerRowOut,
+        space: colorSpace,
+        bitmapInfo: bitmapInfo.rawValue
+    ) else {
+        return false
+    }
+    
+    guard let cgImage = context.makeImage() else {
+        return false
+    }
+    
+    // Save as PNG
+    guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+        return false
+    }
+    
+    CGImageDestinationAddImage(destination, cgImage, nil)
+    return CGImageDestinationFinalize(destination)
+}
+
 func writeDepthMapToTIFFWithLibTIFF(depthMap: CVPixelBuffer, url: URL) -> Bool {
     let width = CVPixelBufferGetWidth(depthMap)
     let height = CVPixelBufferGetHeight(depthMap)
+    let pixelFormat = CVPixelBufferGetPixelFormatType(depthMap)
     
     CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(rawValue: 0))
     guard let baseAddress = CVPixelBufferGetBaseAddress(depthMap) else {
@@ -253,10 +353,10 @@ func writeDepthMapToTIFFWithLibTIFF(depthMap: CVPixelBuffer, url: URL) -> Bool {
     }
     
     for y in 0..<height {
-        let pixelBytes = baseAddress.advanced(by: y * bytesPerRow)
-        let pixelBuffer = UnsafeBufferPointer<Float>(start: pixelBytes.assumingMemoryBound(to: Float.self), count: width)
+        let rowPtr = baseAddress.advanced(by: y * bytesPerRow).assumingMemoryBound(to: Float32.self)
         for x in 0..<width {
-            rasters.setFirstPixelSampleAtX(Int32(x), andY: Int32(y), withValue: NSDecimalNumber(value: pixelBuffer[x]))
+            let depthValue = rowPtr[x]
+            rasters.setFirstPixelSampleAtX(Int32(x), andY: Int32(y), withValue: NSDecimalNumber(value: depthValue))
         }
     }
     
